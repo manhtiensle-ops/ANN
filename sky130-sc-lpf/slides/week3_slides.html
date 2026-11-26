@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SKY130-SC-LPF — Tuần 3: Schematic Xschem &amp; Ngspice Pre-Layout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+:root {
+  --ink: #0C4A6E;
+  --ink-dark: #082F49;
+  --ocean: #0284C7;
+  --ocean-deep: #0369A1;
+  --ocean-soft: #E0F2FE;
+  --sky-bg: #F7FBFF;
+  --gold: #D97706;
+  --gold-bright: #F59E0B;
+  --gold-soft: #FEF3C7;
+  --gold-pale: #FFFBEB;
+  --white: #FFFFFF;
+  --border-blue: #BAE6FD;
+  --border-gold: #FDE68A;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #DBEAFE 0%, #F0F9FF 50%, #FEF3C7 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-dark);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+.katex, .code-tag, .code-tag-gold, .normal-case { text-transform: none !important; }
+.code-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.code-tag-gold {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+#deck {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: center center;
+}
+.slide {
+  width: 1280px;
+  height: 720px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 44px 36px 44px;
+  background: var(--sky-bg);
+  border-top: 5px solid #0284C7;
+  border-bottom: 3px solid #F59E0B;
+  overflow: hidden;
+  box-shadow: 0 22px 55px rgba(3, 105, 161, 0.16);
+}
+.slide::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0) 70%);
+  pointer-events: none;
+}
+.slide.active { display: flex; }
+.slide-cover {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 56%, #FEF3C7 100%);
+  color: #082F49;
+  border-top: 7px solid #0369A1;
+  border-bottom: 5px solid #F59E0B;
+}
+.slide-cover::after {
+  content: "";
+  position: absolute;
+  bottom: -110px;
+  left: -90px;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.10) 0%, rgba(2, 132, 199, 0) 70%);
+  pointer-events: none;
+}
+.ieee-card {
+  background: #FFFFFF;
+  border: 1px solid #BAE6FD;
+  border-radius: 13px;
+  padding: 14px 18px;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.06);
+}
+.gold-card {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.08);
+}
+.ocean-card {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 1.5px solid #0284C7;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.08);
+}
+.fig-frame {
+  background: #FFFFFF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 14px rgba(3, 105, 161, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.badge-ocean {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #7DD3FC;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-gold {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-blue {
+  background: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #93C5FD;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.ieee-table { width: 100%; border-collapse: collapse; }
+.ieee-table thead tr {
+  background: linear-gradient(90deg, #0369A1 0%, #0284C7 100%);
+  color: #FFFFFF;
+  border-bottom: 2.5px solid #F59E0B;
+}
+.ieee-table tbody tr:nth-child(even) { background: #F0F9FF; }
+.ieee-table tbody tr:nth-child(odd) { background: #FFFFFF; }
+.ieee-table tbody tr.row-gold { background: #FFFBEB; }
+.transition-hook {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #FFFBEB 0%, #EFF6FF 100%);
+  border: 1px solid #FDE68A;
+  border-left: 5px solid #F59E0B;
+  border-radius: 9px;
+  padding: 6px 14px;
+  font-size: 12.2px;
+  color: #0C4A6E;
+  font-weight: 500;
+}
+.katex { font-size: 0.99em !important; }
+.progress-track {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(2, 132, 199, 0.14);
+  z-index: 40;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284C7, #38BDF8, #F59E0B);
+  transition: width 0.25s ease;
+}
+#notes-panel {
+  position: fixed;
+  left: 22px;
+  bottom: 48px;
+  max-width: 790px;
+  background: #FFFFFF;
+  color: #082F49;
+  border: 2px solid #0284C7;
+  border-top: 5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 13px 18px;
+  font-size: 13px;
+  line-height: 1.52;
+  box-shadow: 0 14px 36px rgba(3, 105, 161, 0.20);
+  z-index: 55;
+  display: none;
+}
+#notes-panel.open { display: block; }
+.hud-pill {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #7DD3FC;
+  color: #0369A1;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.14);
+}
+.nav-link {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0369A1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.nav-link:hover { background: #E0F2FE; }
+.nav-link.current {
+  background: linear-gradient(90deg, #0284C7, #0369A1);
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35);
+}
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body {
+    background: #FFFFFF;
+    overflow: visible;
+    height: auto;
+    width: auto;
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #deck { transform: none !important; width: 1280px; height: auto; }
+  .slide {
+    position: relative !important;
+    display: flex !important;
+    page-break-after: always;
+    break-after: page;
+    box-shadow: none !important;
+  }
+  .nav-controls, .week-switcher, .progress-track, #notes-panel { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <section class="slide slide-cover active" id="w3-start" data-notes="Mở đầu Tuần 3: dẫn người xem đi từ câu hỏi Tại sao cần Schematic BSIM4 dù Python Tuần 2 đã mô phỏng gần đủ.">
+    
+            <div class="flex items-center justify-between border-b-2 border-sky-200 pb-3 relative z-10">
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-md bg-sky-600 text-white text-xs font-bold tracking-widest uppercase mono">IEEE / ISSCC DESIGN SERIES</span>
+                <span class="text-sky-900 text-sm font-semibold mono">PDK: SkyWater 130nm (sky130A) • Xschem + Ngspice BSIM4</span>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold mono">TUẦN 03 / 04 — SCHEMATIC &amp; PRE-LAYOUT</span>
+            </div>
+
+            <div class="my-auto py-2 relative z-10">
+              <p class="text-amber-700 font-bold tracking-wider uppercase text-xs mono mb-1.5">From $g_m/I_D$ Sizing to Verified Transistor-Level Schematic Netlists</p>
+              <h1 class="text-[44px] font-extrabold tracking-tight leading-tight text-sky-950 max-w-5xl">
+                Thiết Kế Schematic Chuẩn IEEE<br />
+                <span class="text-sky-600">&amp; Mô Phỏng Ngspice BSIM4 Pre-Layout</span>
+              </h1>
+              <p class="text-sky-900 text-base mt-3 max-w-4xl">
+                Tuần 3 trả lời chuỗi câu hỏi thực chiến: <strong class="text-amber-800">Tuần 3 là gì?</strong> $\to$ <strong class="text-sky-700">Ký hiệu cổng IEEE &amp; cấu trúc phân cấp?</strong> $\to$ <strong class="text-sky-950">Đo từng khối qua Testbench ra sao?</strong> $\to$ <strong class="text-amber-800">Tại sao phải sửa Iter 1 $\to$ Iter 2 mới thắng Gate 3?</strong>
+              </p>
+
+              <div class="grid grid-cols-4 gap-4 mt-8">
+                <div class="ocean-card p-4">
+                  <div class="text-sky-800 text-xs uppercase font-bold">1. Tần số cắt Pre-Layout</div>
+                  <div class="text-2xl font-extrabold text-sky-700 mt-1 mono">$193.972\text{ kHz}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Sai lệch $+3.36\%$ &lt; Ngưỡng $5\%$</div>
+                </div>
+                <div class="gold-card p-4">
+                  <div class="text-amber-900 text-xs uppercase font-bold">2. Độ tuyến tính Phổ FFT</div>
+                  <div class="text-2xl font-extrabold text-amber-800 mt-1 mono">$\text{SFDR} = 54.14\text{ dB}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">$\text{ENOB} = 8.62\text{ bits},\ \text{THD} = 0.207\%$</div>
+                </div>
+                <div class="ocean-card p-4">
+                  <div class="text-sky-800 text-xs uppercase font-bold">3. Bão hòa 5T-OTA (.op)</div>
+                  <div class="text-2xl font-extrabold text-sky-700 mt-1 mono">$5/5\text{ MOS PASS}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">$A_{OL}=41.62\text{ dB},\ \text{PM}=81.05^\circ$</div>
+                </div>
+                <div class="gold-card p-4">
+                  <div class="text-amber-900 text-xs uppercase font-bold">4. Sạch Schematic Xschem</div>
+                  <div class="text-2xl font-extrabold text-amber-800 mt-1 mono">$9\text{ Cells} • \text{ERC}=0$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Xuất đủ $AD, AS, PD, PS$</div>
+                </div>
+              </div>
+            </div>
+            
+    <div class="space-y-1.5 relative z-10">
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi dẫn nhập →</span>
+        <span>Ở Tuần 2 ta đã có bảng kích thước $W/L$ và Golden Model — vậy chính xác Tuần 3 là gì và tại sao mô hình Python vẫn chưa đủ để thay thế Ngspice BSIM4?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/75 font-medium pt-0.5">
+        Data Source: xschem/*.sch • ngspice/tb_*.spice • metrics_week3_prelayout.json • <span class="mono font-bold">Slide 01 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s2" data-notes="Tuần 3 giúp kiểm chứng toàn bộ hành vi phi tuyến thực của model BSIM4PDK sky130A mà Python đơn giản hóa.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Định Nghĩa &amp; Mục Đích Chiến Lược Của Tuần 3</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tuần 3 Là Gì? Vì Sao Đã Có Python Vẫn Phải Lên Schematic BSIM4?</h2>
+      </div>
+      <span class="badge-gold">Transistor-Level Truth</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">Giới hạn tất yếu của mô hình toán học Tuần 2</span>
+                  <h3 class="text-lg font-extrabold text-sky-950 mt-1">Python Chỉ Thấy Những Gì Ta Tự Viết Vào</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-sky-950 list-disc pl-4">
+                    <li>Trong Python, khóa là 1 điện trở đơn $R_{\text{on}}$; trong silicon thật, BSIM4 có thêm <strong>tụ chồng cổng–máng $C_{gd}, C_{gs}$</strong> và <strong>tụ vùng khuếch tán $C_{db}, C_{sb}$</strong> (<span class="code-tag">AD, AS, PD, PS</span>).</li>
+                    <li>5T-OTA thật có cực nội bộ $V_{D1}$, giới hạn biên độ ra, độ lệch hệ thống ($-1.85\text{ mV}$) và dòng rò dưới ngưỡng.</li>
+                    <li>Mỗi transistor cần ký hiệu kết nối chuẩn xác 4 cực (<span class="code-tag">D, G, S, B</span>) để Tuần 4 chạy LVS không gãy.</li>
+                  </ul>
+                </div>
+                <div class="bg-white border border-amber-300 rounded-lg p-2.5 text-xs font-bold text-amber-900 text-center mt-2">
+                  Tuần 3 biến “con số giấy” $W/L$ thành lưới Transistor sống!
+                </div>
+              </div>
+
+              <div class="col-span-7 flex flex-col gap-3 justify-center">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Nhiệm vụ 1 • Dựng Thư viện 9 Schematic &amp; Symbol Chuẩn IEEE</div>
+                  <p class="text-sm text-sky-950 mt-1">Vẽ phân cấp trên Xschem với ký hiệu chuẩn quốc tế (<span class="code-tag">NOT, NAND2, AND2, TG, OTA</span>) — bảo đảm sạch <span class="code-tag">ERC = 0</span> và xuất chính xác tham số diện tích/chu vi nguồn–máng.</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Nhiệm vụ 2 • Kiểm chứng Đơn vị (Unit Verification) Bằng Testbench</div>
+                  <p class="text-sm text-sky-950 mt-1">Cô lập từng khối qua 4 testbench chuyên biệt: đo $t_{\text{nov}}$ (<span class="code-tag">tb_clk</span>), quét $R_{\text{on}}(V)$ (<span class="code-tag">tb_tg</span>), kiểm <span class="code-tag">.op/.ac/.tran</span> (<span class="code-tag">tb_ota</span>) trước khi ghép chung.</p>
+                </div>
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Nhiệm vụ 3 • Gỡ Lỗi Toàn Mạch (Iter 1 → Iter 2) &amp; So Golden</div>
+                  <p class="text-sm text-sky-950 mt-1">Chạy mô phỏng LPTV toàn mạch (<span class="code-tag">tb_top_sc_lpf</span> + <span class="code-tag">tb_top_bode</span>), xử lý ký sinh nút $V_1$ và kéo sai lệch $f_c$ xuống còn $+3.36\%$ (&lt; $5\%$).</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bước đầu tiên vẽ Schematic, làm sao để sơ đồ nguyên lý nhìn vào là hiểu ngay chức năng của từng cổng logic và từng khối thay vì toàn những hộp chữ nhật vô hồn?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 02 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s3" data-notes="Nêu bật việc thiết kế lại hình ảnh ký hiệu logic trên Xschem để đạt chuẩn hội nghị và trực quan hóa hướng dòng tín hiệu.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Chuẩn Hóa Ký Hiệu Logic IEEE/ANSI Trên Xschem</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Sửa Lại Toàn Bộ Ký Hiệu Logic Chuẩn IEEE &amp; Các Tế Bào Cơ Sở CMOS</h2>
+      </div>
+      <span class="badge-ocean">Standard IEEE Symbols</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_logic_and_cells.png" alt="IEEE Symbols and Leaf Cells" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_logic_and_cells.png:</span> 6 ký hiệu chuẩn IEEE/ANSI (<span class="code-tag">NOT, NAND2, AND2, TG, Dummy, 5T-OTA</span>) &amp; sơ đồ transistor bên trong.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Tại sao sửa ký hiệu hộp → IEEE?</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Thay thế toàn bộ hộp chữ nhật chung chung bằng: <strong>tam giác + bóng đảo (<span class="code-tag">NOT</span>)</strong>, <strong>thân chữ D + bóng (<span class="code-tag">NAND2</span>)</strong>, <strong>chữ D không bóng (<span class="code-tag">AND2</span>)</strong>, <strong>2 tam giác đối đầu (<span class="code-tag">TG</span>)</strong> và <strong>Op-Amp (<span class="code-tag">5T-OTA</span>)</strong>.
+                  </p>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Bảo toàn tọa độ chân &amp; LVS 100%</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Tất cả tọa độ chân cắm (<span class="code-tag">pin</span>) giữ nguyên đúng lưới <span class="mono">20 mil</span> Xschem và bổ sung thêm cell <span class="code-tag-gold">and2_cell.sch</span> (<span class="code-tag">NAND2 + NOT</span>) — hoàn toàn không làm sai netlist SPICE.
+                  </p>
+                </div>
+                <div class="ieee-card py-2 text-xs text-sky-900">
+                  <strong>9 file sạch ERC=0:</strong> <span class="code-tag">inv_cell</span>, <span class="code-tag">nand2_cell</span>, <span class="code-tag">and2_cell</span>, <span class="code-tag">non_overlap_clk</span>, <span class="code-tag">tg_switch</span>, <span class="code-tag">tg_dummy</span>, <span class="code-tag">sc_core</span>, <span class="code-tag">ota_5t</span>, <span class="code-tag">top_sc_lpf</span>.
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Từ 9 tế bào chuẩn IEEE này, làm thế nào chúng được ghép thành sơ đồ hệ thống top_sc_lpf.sch và đi dây tránh chéo nhau?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 03 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s4" data-notes="Giới thiệu schematic top_sc_lpf.sch sau khi đã dọn sạch các đường dây chéo và tách nhánh IBIAS.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Kiến Trúc Phân Cấp Top-Level Schematic</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Sơ Đồ Hệ Thống Phân Cấp Toàn Chip (<span class='code-tag'>top_sc_lpf.sch</span>)</h2>
+      </div>
+      <span class="badge-blue">Hierarchical Schematic</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_top_sc_lpf.png" alt="Top SC LPF Schematic" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_top_sc_lpf.png:</span> Đường dẫn dòng $I_{\text{BIAS}}$ rẽ gọn phía trên-phải, hoàn toàn tách bạch vòng hồi tiếp $V_{\text{OUT}} \to V_{\text{INN}}$.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Luồng tín hiệu &amp; Phân cấp</div>
+                  <ul class="text-xs text-sky-950 mt-1 space-y-1 list-disc pl-4">
+                    <li><strong>Phía trên:</strong> Khối <span class="code-tag">XCLK (non_overlap_clk)</span> nhận <span class="code-tag">CLK</span> tạo 4 pha sạch <span class="code-tag">PHI1/1B/2/2B</span>.</li>
+                    <li><strong>Đường chính:</strong> <span class="code-tag">VIN</span> $\to$ <span class="code-tag">XSC (sc_core)</span> $\to$ nút ảo <span class="code-tag">VX</span> $\to$ <span class="code-tag">XOTA (ota_5t)</span> $\to$ <span class="code-tag">VOUT</span>.</li>
+                    <li><strong>Hồi tiếp đơn vị:</strong> <span class="code-tag">VOUT</span> nối trực tiếp về <span class="code-tag">VINN</span>, giữ nút $V_X$ ở đất ảo $V_{\text{CM}} = 0.9\text{ V}$.</li>
+                  </ul>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Xuất tham số Vùng Khuếch Tán (AD/AS)</div>
+                  <p class="text-xs text-sky-950 mt-1">
+                    Xschem tự xuất công thức hình học S/D (<span class="mono">AD=W*0.29, AS=W*0.29, PD=2W+0.58</span>) — giúp mô phỏng Pre-Layout <strong>thấy trước ~75% tụ ký sinh của bản thân transistor</strong>!
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Sơ đồ tổng thể đã khép kín — nhưng nếu chạy thẳng toàn mạch ngay mà lỗi thì làm sao biết khối nào hỏng? Ta cần thiết kế 4 Testbench kiểm tra ra sao?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 04 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s5" data-notes="Giới thiệu tổng quan 4 testbench mô phỏng đơn vị và toàn mạch trong ngspice/.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Phương Pháp Luận Kiểm Chứng Với 4 Testbench</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Xây Dựng Hệ Thống 4 Testbench (<span class='code-tag'>tb_clk, tb_tg, tb_ota, tb_top</span>)</h2>
+      </div>
+      <span class="badge-gold">Divide &amp; Conquer</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_testbenches.png" alt="Four Ngspice Testbenches" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_testbenches.png:</span> 4 bàn thử nghiệm SPICE độc lập — từ đo thời gian trễ, quét DC $R_{\text{on}}$, phá vòng AC OTA đến Coherent FFT.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2">
+                <div class="ieee-card py-2 border-l-4 border-l-sky-600">
+                  <div class="text-xs font-bold text-sky-800 mono">1. tb_clk.spice (.tran 10p 250n)</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Nguồn xung $10\text{ MHz}$ ($t_r=t_f=100\text{ ps}$) + 4 tụ tải $25\text{ fF}$ đại diện cực cổng của <span class="code-tag">TG1, TG2</span>.</p>
+                </div>
+                <div class="ieee-card py-2 border-l-4 border-l-amber-500">
+                  <div class="text-xs font-bold text-amber-800 mono">2. tb_tg.spice (.dc Vin 0 1.8 5m)</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Áp sai thế nhỏ $\Delta V_{DS} = 1\text{ mV}$ để đo chuẩn xác $R_{\text{on}}(V_{\text{in}}) = 1\text{ mV} / |I_{\text{test}}|$.</p>
+                </div>
+                <div class="ieee-card py-2 border-l-4 border-l-blue-600">
+                  <div class="text-xs font-bold text-blue-800 mono">3. tb_ota.spice (.op + .ac + .tran)</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Kỹ thuật <strong>phá vòng AC siêu lớn</strong> (<span class="code-tag">L=1GH, C=1GF</span>): giữ điểm DC tự động đóng vòng nhưng cắt đứt hồi tiếp khi quét AC!</p>
+                </div>
+                <div class="gold-card py-2">
+                  <div class="text-xs font-bold text-amber-900 mono">4. tb_top_sc_lpf + tb_top_bode</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Ghép tải $C_L = 1\text{ pF}$, $I_{\text{ref}} = 30\ \mu\text{A}$, nguồn $58.59\text{ kHz}$ Coherent hoặc 11-tone Multisine.</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bắt đầu từ Khối 1 (<span class='code-tag'>non_overlap_clk</span>): bên trong mạch tạo xung không chồng lấn gồm những cổng CMOS nào và tạo trễ 3 ns bằng cách gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 05 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s6" data-notes="Phân tích chi tiết schematic non_overlap_clk.sch với các cổng NAND2 và NOT chuẩn IEEE.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Thiết Kế &amp; Kiểm Định Từng Khối Con (1/4)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Khối 1 (<span class='code-tag'>non_overlap_clk</span>): Chốt Chéo NAND2 &amp; Chuỗi Trễ 6 Tầng</h2>
+      </div>
+      <span class="badge-ocean">Block 1 Schematic</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_non_overlap_clk.png" alt="Non Overlap Clock Schematic" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_non_overlap_clk.png:</span> Giao tiếp ký hiệu IEEE <span class="code-tag">XINV0</span>, cặp chốt chéo <span class="code-tag">XNAND_A/B</span>, chuỗi 6 <span class="code-tag">NOT</span> tạo trễ $t_{\text{nov}}$ &amp; đệm pha đảo.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Cơ chế Break-Before-Make</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Xung ra của nhánh $\Phi_1$ đi ngược về chân thứ 2 của <span class="code-tag">XNAND_B</span>. Vì phải đợi tín hiệu TẮT của nhánh này truyền qua hết <strong>6 tầng trễ <span class="code-tag">NOT</span> ($L = 0.95\ \mu\text{m}$)</strong>, nhánh $\Phi_2$ buộc phải mở chậm lại đúng bằng $t_{\text{nov}}$!
+                  </p>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Cân bằng tải đối xứng $\Phi_1 / \overline{\Phi_1}$</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Đệm ra dùng <span class="code-tag">inv_cell</span> ($L=0.15\ \mu\text{m}$, $W_n=1.2\ \mu\text{m}, W_p=2.8\ \mu\text{m}$) cho sườn dốc $174\text{ ps}$ — giảm rung chuyển thời gian (jitter) lúc lấy mẫu.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Sơ đồ mạch tạo xung nhìn rất hợp lý trên giấy — khi bấm nút chạy Ngspice <span class='code-tag'>tb_clk.spice</span>, 4 pha xung thực tế đo được bao nhiêu ns?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 06 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s7" data-notes="Khối 1 vượt Gate Tuần 3 trọn vẹn với khoảng chết đối xứng ~3.1 ns, sườn dốc sub-220 ps.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Kiểm Chứng Khối 1 Trên Xschem &amp; Ngspice</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Kết Quả Đo Kiểm Khối 1: Khoảng Chết Đối Xứng $3.116\text{ ns} / 3.092\text{ ns}$</h2>
+      </div>
+      <span class="badge-gold">Gate Block 1: PASS</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_gui_clk_workstation.png" alt="Clock Workstation Light Mode" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_gui_clk_workstation.png:</span> Ảnh chụp Xschem nền sáng + Terminal đo BSIM4 + Đồ thị dạng sóng 4 pha <span class="code-tag">PHI1, PHI1B, PHI2, PHI2B</span>.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Bảng số liệu đo Ngspice (Load <span class="normal-case">25 fF</span>)</div>
+                  <table class="ieee-table text-xs mt-1.5">
+                    <thead><tr><th class="p-1.5 text-left">Thông số</th><th class="p-1.5 text-right">Đo thực</th><th class="p-1.5 text-right">Mục tiêu</th></tr></thead>
+                    <tbody>
+                      <tr><td class="p-1.5 font-semibold">$t_{\text{nov}, 1\to 2}$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">3.116 ns</td><td class="p-1.5 text-right">2–5 ns ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">$t_{\text{nov}, 2\to 1}$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">3.092 ns</td><td class="p-1.5 text-right">2–5 ns ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">$t_r / t_f$ (20–80%)</td><td class="p-1.5 text-right font-bold text-sky-700 mono">174 / 220 ps</td><td class="p-1.5 text-right">&lt; 500 ps ✓</td></tr>
+                      <tr class="row-gold"><td class="p-1.5 font-semibold">$\max(V_{\Phi_1} V_{\Phi_2})$</td><td class="p-1.5 text-right font-bold text-amber-800 mono">0.00295 V²</td><td class="p-1.5 text-right">≈ 0 ✓</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="gold-card py-2 text-xs text-sky-950">
+                  <strong>Ý nghĩa vật lý:</strong> Tích $V_{\Phi_1} V_{\Phi_2} = 2.95\text{ mV}^2$ khẳng định tại mọi thời điểm chuyển mạch, chưa bao giờ cả hai khóa $TG_1$ và $TG_2$ cùng mở để làm rò điện tích $C_1$!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Xung điều khiển 4 pha đã sạch tuyệt đối — tiếp theo, Khối 2 (<span class='code-tag'>tg_switch</span> &amp; <span class='code-tag'>tg_dummy</span>) được vẽ ra sao để truyền cả dải điện áp quanh $V_{\text{CM}} = 0.9\text{ V}$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 07 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s8" data-notes="Trình bày cấu trúc tg_switch và vai trò khóa bù tg_dummy W/2.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Thiết Kế &amp; Kiểm Định Từng Khối Con (2/4)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Khối 2 (<span class='code-tag'>tg_switch</span> &amp; <span class='code-tag'>tg_dummy</span>): Cặp Song Song CMOS &amp; Khóa Bù W/2</h2>
+      </div>
+      <span class="badge-ocean">Block 2 Schematic</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_tg_switch.png" alt="TG Switch Schematic" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_tg_switch.png:</span> Mắc song song <span class="code-tag">XM_N</span> ($W=2\ \mu\text{m}, nf=1$) và <span class="code-tag">XM_P</span> ($W=6\ \mu\text{m}, nf=2$), nối body chuẩn về <span class="code-tag">VSS / VDD</span>.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Cấu tạo &amp; Tỷ lệ $W_p / W_n = 3$</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Trong Sky130A, độ linh động lỗ trống $\mu_p \approx \mu_n / 3$. Khi lấy $W_p = 6.0\ \mu\text{m}$ và $W_n = 2.0\ \mu\text{m}$ ($L = 0.15\ \mu\text{m}$), độ dẫn $g_{ds,n}$ và $g_{ds,p}$ cân bằng nhau tại vùng giữa $V_{\text{CM}} = 0.9\text{ V}$.
+                  </p>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Khóa Bù <span class="code-tag-gold">tg_dummy</span> ($W/2$)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Chập ngắn chân $D \equiv S$ và kích bởi xung ngược pha $\overline{\Phi}$: khi khóa chính tắt nhả $Q_{ch}/2$, khóa Dummy bật lên để hút đúng lượng điện tích đó vào kênh mới!
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi rút kích thước $W_n/W_p$ từ $4/12\ \mu\text{m}$ (nháp ban đầu) xuống $2/6\ \mu\text{m}$ để giảm ký sinh, điện trở thông $R_{\text{on}}(V_{\text{in}})$ có bị vượt trần $5\text{ k}\Omega$ không?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 08 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s9" data-notes="Phân tích đường cong Ron của tg_switch (2um/6um) đảm bảo phẳng dưới 5 kOhm trên toàn dải.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Quét DC Đo Đường Đặc Tuyến $R_{\text{on}}(V_{\text{in}})$</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Kết Quả Đo Kiểm Khối 2: $R_{\text{on,max}} = 4.431\text{ k}\Omega &lt; 5\text{ k}\Omega$ &amp; Nạp $105.8\tau$</h2>
+      </div>
+      <span class="badge-gold">Gate Block 2: PASS</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_gui_tg_workstation.png" alt="TG Switch Workstation" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_gui_tg_workstation.png:</span> Đường cong $R_{\text{on}}(V_{\text{in}})$ toàn dải $0 \to 1.8\text{ V}$ tại điểm cực đại đỉnh giữa $4.431\text{ k}\Omega$.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Thông số đo BSIM4 (.dc)</div>
+                  <table class="ieee-table text-xs mt-1.5">
+                    <thead><tr><th class="p-1.5 text-left">Điểm đo</th><th class="p-1.5 text-right">Giá trị</th><th class="p-1.5 text-right">Chuẩn</th></tr></thead>
+                    <tbody>
+                      <tr><td class="p-1.5 font-semibold">$R_{\text{on}}(0.90\text{ V})$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">3.713 kΩ</td><td class="p-1.5 text-right">Rất phẳng ✓</td></tr>
+                      <tr class="row-gold"><td class="p-1.5 font-semibold">$R_{\text{on,max}}$ (@$0.955\text{ V}$)</td><td class="p-1.5 text-right font-bold text-amber-800 mono">4.431 kΩ</td><td class="p-1.5 text-right">&lt; 5.0 kΩ ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">$R_{\text{on,min}}$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">0.463 kΩ</td><td class="p-1.5 text-right">Vùng rìa ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">$\tau_{\max} = R_{\text{on,max}} C_1$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">0.443 ns</td><td class="p-1.5 text-right">105.8τ ✓</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="gold-card py-2 text-xs text-sky-950">
+                  <strong>Biên độ nạp siêu dư:</strong> Trong thời gian mở $T_{\text{on}} \approx 46.9\text{ ns}$, tụ $C_1 = 100\text{ fF}$ được nạp qua <strong>$105.8$ hằng số thời gian $\tau$</strong> (sai số chưa nạp $e^{-105.8} \approx 0$)!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đã có xung sạch (Khối 1) và khóa dẫn tốt (Khối 2) — chúng được ghép với hai tụ MIM trong Khối 3 (<span class='code-tag'>sc_core</span>) ra sao và đặt Dummy ở đâu cho tối ưu?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 09 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s10" data-notes="Giới thiệu cấu trúc sc_core dùng tụ đơn vị MIM MF=1 vs MF=8 và lý do chỉ gắn XDUM2 tại VX.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Thiết Kế &amp; Kiểm Định Từng Khối Con (3/4)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Khối 3 (<span class='code-tag'>sc_core</span>): Mảng Tụ Đơn Vị MIM &amp; Bù Điện Tích Chọn Lọc</h2>
+      </div>
+      <span class="badge-blue">Block 3 Schematic</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_sc_core.png" alt="SC Core Schematic" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_sc_core.png:</span> Nhánh rẽ hình chữ T gồm <span class="code-tag">XTG1, XTG2</span>, <span class="code-tag">XC1 (MF=1)</span>, <span class="code-tag">XC2 (MF=8)</span> và khóa bù chọn lọc <span class="code-tag-gold">XDUM2</span> tại nút $V_X$.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Chuẩn hóa Tụ Đơn vị MIM ($100\text{ fF}$)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Cả $C_1$ và $C_2$ dùng chung 1 tế bào gốc <span class="code-tag">cap_mim_m3_1</span> kích thước $W=4.85\ \mu\text{m}, L=9.85\ \mu\text{m}$ ($C_u = 100.0\text{ fF}$ đã tính trừ bù $dw=0.15\ \mu\text{m}$): <span class="mono font-bold">XC1 (MF=1)</span> và <span class="mono font-bold">XC2 (MF=8)</span> $\implies$ bảo toàn tuyệt đối tỷ lệ $C_2/C_1 = 8.000$.
+                  </p>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Quyết định Kỹ thuật: Bỏ <span class="code-tag-gold">XDUM1</span> ở $V_1$!</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Ta <strong>chỉ giữ <span class="code-tag-gold">XDUM2</span> ($1.0 / 3.0\ \mu\text{m}$) tại nút ảo $V_X$</strong> để chặn lệch áp DC (với $\Phi_2 \implies Q_{ci}$ đổi thẳng thành $V_{\text{offset}}$), còn ở nút $V_1$ ta loại bỏ Dummy để không làm phình $C_{p,V1}$!
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đó là lõi thụ động $C_1, C_2$ — nhưng để vận chuyển điện tích từ $C_1$ sang $C_2$ mà không sụt áp, ta cần Khối 4: Bộ khuếch đại <span class='code-tag'>ota_5t</span> thiết kế ra sao?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 10 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s11" data-notes="Phân tích sơ đồ nguyên lý ota_5t với cặp vi sai NMOS, gương PMOS và dòng đuôi gấp đôi từ Iref=30 uA.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Thiết Kế &amp; Kiểm Định Từng Khối Con (4/4)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Khối 4 (<span class='code-tag'>ota_5t</span>): Khuếch Đại Vi Sai 5-Transistor &amp; Nguồn Dòng Đuôi</h2>
+      </div>
+      <span class="badge-ocean">Block 4 Schematic</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_sch_ota_5t.png" alt="5T OTA Schematic" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_sch_ota_5t.png:</span> Cặp vi sai NMOS <span class="code-tag">XM1/XM2</span> ($32/0.5$), Gương PMOS <span class="code-tag">XM3/XM4</span> ($16/0.5$), và Nguồn dòng đuôi <span class="code-tag">XM5/XM6</span> ($24/1.0$).
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Ưu điểm Vàng của 5T-OTA Một Tầng</div>
+                  <ul class="text-xs text-sky-950 mt-1 space-y-1 list-disc pl-4">
+                    <li><strong>Tự bù pha bởi tải $C_L$:</strong> Chỉ có 1 cực chính tại đầu ra $V_{\text{OUT}}$ ($C_L = 1\text{ pF}$ + $C_2$), cực nội bộ $V_{D1}$ nằm rất cao $\implies$ PM đạt $81^\circ$ không cần tụ bù Miller!</li>
+                    <li>Chiều dài $L = 0.50\ \mu\text{m}$ (&gt;$3\times L_{\min}$) nâng trở kháng ra $r_o$, giúp $A_{OL} = g_m (r_{o2} \parallel r_{o4})$ vượt $40\text{ dB}$.</li>
+                  </ul>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Gương dòng $I_{\text{ref}} = 30\ \mu\text{A}$ &amp; Phân cực</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Dòng <span class="code-tag">XM6</span> ($12/1.0$) nhân bản $2\times$ sang <span class="code-tag">XM5</span> ($24/1.0$, $L=1.0\ \mu\text{m}$) cho dòng đuôi đo thực $I_{\text{tail}} = 28.17\ \mu\text{A}$ (độ ổn định cao quanh điểm $V_{\text{CM}} = 0.9\text{ V}$).
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Dùng bàn đo <span class='code-tag'>tb_ota.spice</span> phá vòng AC ($L=1\text{ GH}, C=1\text{ GF}$), đáp ứng tần số Bode và tốc độ quay (Slew Rate) của 5T-OTA thực đo đạt bao nhiêu?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 11 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s12" data-notes="Trình bày kết quả đo AC và Slew Rate của 5T-OTA trên bàn đo tb_ota.spice.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Đo Kiểm Vòng Hở &amp; Quá Độ Của 5T-OTA</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Kết Quả Đo Kiểm Khối 4: $A_{OL}=41.62\text{ dB},\ \text{GBW}=43.61\text{ MHz},\ \text{PM}=81.05^\circ$</h2>
+      </div>
+      <span class="badge-gold">Gate Block 4: PASS</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_gui_ota_workstation.png" alt="OTA Workstation" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_gui_ota_workstation.png:</span> Xschem 5T-OTA, nhật ký kiểm tra bão hòa <span class="code-tag">.op</span> và đồ thị Bode AC vòng hở ổn định biên độ–pha.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Hiệu năng AC &amp; Tran (.ac / .tran)</div>
+                  <table class="ieee-table text-xs mt-1.5">
+                    <thead><tr><th class="p-1.5 text-left">Tiêu chí OTA</th><th class="p-1.5 text-right">Ngspice</th><th class="p-1.5 text-right">Gate 3</th></tr></thead>
+                    <tbody>
+                      <tr><td class="p-1.5 font-semibold">Độ lợi $A_{OL}$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">41.62 dB</td><td class="p-1.5 text-right">&gt; 35–40 dB ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">Băng thông $\text{GBW}$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">43.61 MHz</td><td class="p-1.5 text-right">&gt; 10 MHz ✓</td></tr>
+                      <tr class="row-gold"><td class="p-1.5 font-semibold">Dự trữ pha $\text{PM}$</td><td class="p-1.5 text-right font-bold text-amber-800 mono">81.05°</td><td class="p-1.5 text-right">&ge; 60° ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">$\text{SR}^+ / \text{SR}^-$</td><td class="p-1.5 text-right font-bold text-sky-700 mono">22.9 / 21.7 V/µs</td><td class="p-1.5 text-right">Nhanh ✓</td></tr>
+                      <tr><td class="p-1.5 font-semibold">DC Offset (@$0.9\text{ V}$)</td><td class="p-1.5 text-right font-bold text-sky-700 mono">−1.85 mV</td><td class="p-1.5 text-right">Nhỏ ✓</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="gold-card py-2 text-xs text-sky-950">
+                  <strong>Ý nghĩa thiết kế:</strong> $\text{GBW} = 43.61\text{ MHz} \approx 4.36 \times f_{\text{clk}}$ giúp đầu ra OTA xác lập trọn vẹn trong $46.9\text{ ns}$ mỗi bán chu kỳ $\Phi_2$!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Các chỉ số AC đã quá đẹp — nhưng về mặt vật lý bán dẫn, cả 5 transistor <span class='code-tag'>XM1–XM5</span> có đang thực sự nằm sâu trong vùng bão hòa hay sắp chạm ranh giới triode?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 12 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s13" data-notes="Bảng điểm .op khẳng định 5/5 transistor bão hòa vững vàng kèm tóm tắt 4 khối đơn vị.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Kiểm Định Bão Hòa (.op) &amp; Tổng Hợp 4 Khối Đơn Vị</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Biên Bão Hòa 5 Transistor (<span class='code-tag'>.op</span>) &amp; Bảng Tổng Kết 4 Khối</h2>
+      </div>
+      <span class="badge-ocean">All 4 Blocks: PASS</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-6 fig-frame">
+                <img src="figs/w3_unit_blocks_summary.png" alt="Unit Blocks Summary Plots" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_unit_blocks_summary.png:</span> 4 biểu đồ kiểm chứng độc lập đồng thời trên BSIM4 (Clock, TG $R_{\text{on}}$, OTA Bode, Slew Step).
+                </p>
+              </div>
+              <div class="col-span-6 flex flex-col gap-3">
+                <div class="ieee-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono mb-1.5">Kiểm tra vùng hoạt động BSIM4 ($V_{DS} - V_{DSAT} > 0$)</div>
+                  <table class="ieee-table text-xs">
+                    <thead><tr><th class="p-1.5 text-left">Transistor</th><th class="p-1.5 text-left">Vai trò</th><th class="p-1.5 text-right">$g_m$ / $I_D$</th><th class="p-1.5 text-right">Biên Bão Hòa</th></tr></thead>
+                    <tbody>
+                      <tr><td class="p-1.5 font-bold text-sky-800 mono">XM1 (N)</td><td class="p-1.5">Cặp vi sai $V_{\text{in}}+$</td><td class="p-1.5 text-right mono">289.5 µS</td><td class="p-1.5 text-right font-bold text-sky-700 mono">+379.2 mV ✓</td></tr>
+                      <tr><td class="p-1.5 font-bold text-sky-800 mono">XM2 (N)</td><td class="p-1.5">Cặp vi sai $V_{\text{in}}-$</td><td class="p-1.5 text-right mono">289.5 µS</td><td class="p-1.5 text-right font-bold text-sky-700 mono">+592.9 mV ✓</td></tr>
+                      <tr><td class="p-1.5 font-bold text-amber-800 mono">XM3 (P)</td><td class="p-1.5">Gương tải diode</td><td class="p-1.5 text-right mono">14 µA</td><td class="p-1.5 text-right font-bold text-sky-700 mono">+970.5 mV ✓</td></tr>
+                      <tr><td class="p-1.5 font-bold text-amber-800 mono">XM4 (P)</td><td class="p-1.5">Gương tải ra</td><td class="p-1.5 text-right mono">14 µA</td><td class="p-1.5 text-right font-bold text-sky-700 mono">+757.6 mV ✓</td></tr>
+                      <tr class="row-gold"><td class="p-1.5 font-bold text-sky-900 mono">XM5 (N)</td><td class="p-1.5">Nguồn dòng đuôi</td><td class="p-1.5 text-right mono">28.17 µA</td><td class="p-1.5 text-right font-bold text-amber-800 mono">+136.6 mV ✓</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="gold-card py-2.5 text-xs text-sky-950">
+                  <strong>Ý nghĩa Biên $+136.6\text{ mV}$ tại XM5:</strong> Cả 5 transistor nằm sâu trong vùng bão hòa; ngay cả khi tín hiệu xoay chiều dao động quanh $0.9\text{ V}$, <span class="code-tag-gold">XM5</span> vẫn giữ dòng đuôi ổn định $28.17\ \mu\text{A}$ không bị sập vào vùng tuyến tính!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Tất cả 4 khối đơn vị đều PASSED xuất sắc — vậy khi ghép chung chúng thành <span class='code-tag'>top_sc_lpf</span>, mọi thứ có tự động chạy đúng $187.675\text{ kHz}$ luôn không? (Cú ngoặt Lịch sử Tuần 3!)</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 13 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s14" data-notes="Đây là bài học Analog Design đắt giá nhất Tuần 3: nút nhạy V1 rất dễ bị phình dung lượng bởi S/D của khóa quá lớn và Dummy thừa.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Ghép Toàn Mạch &amp; Truy Tìm Nguyên Nhân Lệch +22.69%</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Cú Sốc Ghép Mạch (Iter 1): Tại Sao 4 Khối Tốt Lại Cho $f_c = 230.26\text{ kHz}$ (+22.69% FAIL)?</h2>
+      </div>
+      <span class="badge-gold">Engineering Debugging</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-7 fig-frame">
+                
+    <svg viewBox="0 0 640 230" class="w-full h-[215px]">
+      
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+      <text x="320" y="16" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0369A1">
+        Giải phẫu Ký sinh Nút Nhạy V1 &amp; VX Khi Ghép Toàn Mạch
+      </text>
+
+      <!-- Left: VIN -> TG1 -> V1 -> TG2 -> VX -->
+      <text x="20" y="96" font-size="11" font-weight="800" fill="#0C4A6E">V_IN</text>
+      <line x1="50" y1="92" x2="78" y2="92" stroke="#0284C7" stroke-width="2" />
+      
+    <g>
+      <polygon points="90.68,78.88 90.68,105.12 112,92" fill="#E0F2FE" stroke="#0369A1" stroke-width="2" />
+      <polygon points="133.32,78.88 133.32,105.12 112,92" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+      <line x1="102.16" y1="82.98" x2="121.84" y2="82.98" stroke="#D97706" stroke-width="2" />
+      <circle cx="112" cy="78.88" r="3.69" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <line x1="112" y1="75.19" x2="112" y2="67.4" stroke="#D97706" stroke-width="1.8" />
+      <line x1="102.16" y1="101.02" x2="121.84" y2="101.02" stroke="#0369A1" stroke-width="2" />
+      <line x1="112" y1="101.02" x2="112" y2="116.6" stroke="#0369A1" stroke-width="1.8" />
+      <text x="112" y="60.839999999999996" text-anchor="middle" font-size="9.4" font-weight="800" fill="#0369A1">TG1 (2/6)</text><text x="112" y="124.80000000000001" text-anchor="middle" font-size="8.2" font-weight="700" fill="#B45309">Φ₁</text>
+    </g>
+    
+      <line x1="146" y1="92" x2="225" y2="92" stroke="#D97706" stroke-width="2.6" />
+      <circle cx="188" cy="92" r="4" fill="#D97706" />
+      <text x="188" y="76" text-anchor="middle" font-size="11.5" font-weight="800" fill="#B45309">Nút V1 (rất nhạy!)</text>
+
+      <!-- C1 downward at V1 -->
+      <line x1="188" y1="92" x2="188" y2="128" stroke="#0369A1" stroke-width="2" />
+      <line x1="168" y1="128" x2="208" y2="128" stroke="#0369A1" stroke-width="3" />
+      <line x1="168" y1="138" x2="208" y2="138" stroke="#0369A1" stroke-width="3" />
+      <line x1="188" y1="138" x2="188" y2="162" stroke="#0369A1" stroke-width="2" />
+      <line x1="176" y1="162" x2="200" y2="162" stroke="#0C4A6E" stroke-width="2" />
+      <text x="148" y="140" text-anchor="end" font-size="10.5" font-weight="800" fill="#0369A1">C₁ = 100 fF</text>
+
+      <!-- Stray Cp,V1 dashed beside C1 -->
+      <line x1="218" y1="92" x2="218" y2="128" stroke="#D97706" stroke-width="1.8" stroke-dasharray="3,2" />
+      <line x1="208" y1="128" x2="228" y2="128" stroke="#D97706" stroke-width="2.2" />
+      <line x1="208" y1="136" x2="228" y2="136" stroke="#D97706" stroke-width="2.2" />
+      <line x1="218" y1="136" x2="218" y2="162" stroke="#D97706" stroke-width="1.8" stroke-dasharray="3,2" />
+      <text x="234" y="136" font-size="10" font-weight="800" fill="#B45309">ΔC_p,V1</text>
+
+      <!-- TG2 -->
+      
+    <g>
+      <polygon points="238.68,78.88 238.68,105.12 260,92" fill="#E0F2FE" stroke="#0369A1" stroke-width="2" />
+      <polygon points="281.32,78.88 281.32,105.12 260,92" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+      <line x1="250.16" y1="82.98" x2="269.84" y2="82.98" stroke="#D97706" stroke-width="2" />
+      <circle cx="260" cy="78.88" r="3.69" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <line x1="260" y1="75.19" x2="260" y2="67.4" stroke="#D97706" stroke-width="1.8" />
+      <line x1="250.16" y1="101.02" x2="269.84" y2="101.02" stroke="#0369A1" stroke-width="2" />
+      <line x1="260" y1="101.02" x2="260" y2="116.6" stroke="#0369A1" stroke-width="1.8" />
+      <text x="260" y="60.839999999999996" text-anchor="middle" font-size="9.4" font-weight="800" fill="#0369A1">TG2 (2/6)</text><text x="260" y="124.80000000000001" text-anchor="middle" font-size="8.2" font-weight="700" fill="#B45309">Φ₂</text>
+    </g>
+    
+      <line x1="294" y1="92" x2="360" y2="92" stroke="#0284C7" stroke-width="2.4" />
+      <circle cx="332" cy="92" r="4" fill="#0369A1" />
+      <text x="332" y="76" text-anchor="middle" font-size="11" font-weight="800" fill="#0369A1">Nút VX</text>
+
+      <!-- C2 feedback -->
+      <rect x="308" y="116" width="84" height="38" rx="6" fill="#F0F9FF" stroke="#0284C7" stroke-width="1.8" />
+      <text x="350" y="133" text-anchor="middle" font-size="10" font-weight="800" fill="#0369A1">C₂ = 800 fF</text>
+      <text x="350" y="147" text-anchor="middle" font-size="9" font-weight="700" fill="#B45309">+ XDUM2 (1/3 µm)</text>
+
+      <!-- Comparison Boxes on Right -->
+      <rect x="415" y="34" width="212" height="84" rx="10" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2" />
+      <text x="521" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#B45309">Iter 1 (TG 4/12 + DUM1,2)</text>
+      <text x="521" y="73" text-anchor="middle" font-size="10.5" fill="#0C4A6E">ΔC_p,V1 ≈ 22.7 fF (cộng thẳng C₁)</text>
+      <text x="521" y="90" text-anchor="middle" font-size="10.5" fill="#0C4A6E">f_c = 230.26 kHz (+22.69% ❌)</text>
+      <text x="521" y="107" text-anchor="middle" font-size="10" font-weight="700" fill="#B45309">SFDR = 47.84 dB • ENOB = 7.61 b</text>
+
+      <rect x="415" y="130" width="212" height="86" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="2.2" />
+      <text x="521" y="150" text-anchor="middle" font-size="11" font-weight="800" fill="#0369A1">Iter 2 (TG 2/6 + Bỏ DUM1)</text>
+      <text x="521" y="169" text-anchor="middle" font-size="10.5" fill="#0C4A6E">Cắt bớt tụ vùng cống trên V1</text>
+      <text x="521" y="186" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0369A1">f_c = 193.97 kHz (+3.36% ✓)</text>
+      <text x="521" y="203" text-anchor="middle" font-size="10" font-weight="700" fill="#0C4A6E">SFDR = 54.14 dB • ENOB = 8.62 b</text>
+    </svg>
+    
+              </div>
+              <div class="col-span-5 flex flex-col gap-2.5">
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Hiện trường Lỗi Iter 1 (TG 4/12 + DUM1 &amp; DUM2)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Khi chạy toàn mạch lần đầu, tần số cắt vọt lên <strong>$230.260\text{ kHz}$ (lệch $+22.69\%$ $\gg$ ngưỡng $5\%$)</strong>, độ méo <span class="mono">SFDR</span> chỉ còn $47.84\text{ dB}$, mất hơn $1\text{ bit}$ ENOB ($7.61\text{ b}$)!
+                  </p>
+                </div>
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Phân tích Nguyên nhân Vật lý (BSIM4 Parasitics)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Tụ $C_1$ chỉ bằng $100\text{ fF}$! Nhưng nút đỉnh <span class="code-tag">V1</span> ở giữa hai khóa lớn phải cõng đồng thời tụ vùng khuếch tán &amp; tụ chồng của: <strong>TG1 ($4/12$) + TG2 ($4/12$) + XDUM1 ($2/6$)</strong>.
+                  </p>
+                  <div class="bg-white border border-sky-200 rounded p-2 mt-1.5 text-center text-xs font-bold text-sky-900">
+                    $\Delta C_{p,V1} \approx 22.7\text{ fF} \implies C_{1,\text{eff}} = C_1 + \Delta C_{p,V1} \approx 122.7\text{ fF} \implies f_c \uparrow +22.7\%!$
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi đã bắt đúng “thủ phạm” là $\Delta C_{p,V1} = 22.7\text{ fF}$ làm phình $C_1$ hữu dụng, ta phải phẫu thuật mạch ra sao ở Vòng lặp 2 (Iter 2) mà vẫn giữ nguyên $R_{\text{on}} &lt; 5\text{ k}\Omega$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 14 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s15" data-notes="So sánh định lượng giữa Iter 1 (thất bại +22.69%) và Iter 2 (thành công +3.36%) nhờ tối ưu tụ ký sinh.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Tối Ưu Kiến Trúc (Iter 1 → Iter 2)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Phẫu Thuật Iter 2: Thu Gọn TG (2/6) &amp; Bỏ Dummy Trên Nút $V_1$ → Kéo $f_c$ Về $+3.36\%$</h2>
+      </div>
+      <span class="badge-ocean">Root-Cause Solved</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5 items-center">
+              <div class="col-span-6 flex flex-col gap-3">
+                <div class="ocean-card py-3 border-l-4 border-l-sky-600">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Quyết định 1 • Thu gọn TG1 &amp; TG2 từ 4/12 → <span class="normal-case">2/6 µm</span></div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Nhờ phát hiện ở Sl.09 rằng <span class="code-tag">TG 2/6</span> vẫn cho $R_{\text{on,max}} = 4.431\text{ k}\Omega &lt; 5\text{ k}\Omega$ và thời gian nạp $105.8\tau$, việc cắt đôi bề rộng khóa lập tức <strong>giảm $50\%$ điện tích bơm $Q_{ch}$ lẫn tụ ký sinh nút $V_1$</strong>!
+                  </p>
+                </div>
+                <div class="gold-card py-3 border-l-4 border-l-amber-500">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Quyết định 2 • Gỡ bỏ XDUM1 khỏi nút V1, chỉ giữ XDUM2 tại VX</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Ở nút ảo $V_X$, bơm điện tích gây trôi áp DC nên cần <span class="code-tag-gold">XDUM2</span> ($1.0/3.0\ \mu\text{m}$) và ký sinh $C_{p,VX}$ được OTA hồi tiếp hấp thụ vô hại! Ngược lại tại $V_1$, bỏ <span class="code-tag">XDUM1</span> giúp giữ $C_{1,\text{eff}}$ sát $100\text{ fF}$ nhất.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-span-6 ieee-card py-3">
+                <div class="text-xs font-bold uppercase text-sky-800 mono mb-2">Bảng Đối Chiếu Trước &amp; Sau Phẫu Thuật (Pre-Layout)</div>
+                <table class="ieee-table text-xs">
+                  <thead>
+                    <tr><th class="p-2 text-left">Thông số Toàn mạch</th><th class="p-2 text-right">Iter 1 (Cũ)</th><th class="p-2 text-right">Iter 2 (Chốt)</th><th class="p-2 text-right">Cải thiện</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr class="row-gold"><td class="p-2 font-bold">Tần số cắt $f_c$</td><td class="p-2 text-right mono">230.260 kHz</td><td class="p-2 text-right font-extrabold text-sky-700 mono">193.972 kHz</td><td class="p-2 text-right font-bold text-amber-800">+22.7% → +3.36% ✓</td></tr>
+                    <tr><td class="p-2 font-semibold">SFDR (Phổ FFT)</td><td class="p-2 text-right mono">47.84 dB</td><td class="p-2 text-right font-bold text-sky-700 mono">54.14 dB</td><td class="p-2 text-right font-bold text-sky-700">+6.30 dB ✓</td></tr>
+                    <tr><td class="p-2 font-semibold">THD (%)</td><td class="p-2 text-right mono">−47.57 (0.418%)</td><td class="p-2 text-right font-bold text-sky-700 mono">−53.67 (0.207%)</td><td class="p-2 text-right font-bold text-sky-700">Giảm 2× méo ✓</td></tr>
+                    <tr><td class="p-2 font-semibold">ENOB hiệu dụng</td><td class="p-2 text-right mono">7.61 bits</td><td class="p-2 text-right font-bold text-sky-700 mono">8.62 bits</td><td class="p-2 text-right font-bold text-sky-700">+1.01 bit ✓</td></tr>
+                    <tr><td class="p-2 font-semibold">Charge-Inj DC Shift</td><td class="p-2 text-right mono">−1.90 mV</td><td class="p-2 text-right font-bold text-amber-800 mono">−52 µV</td><td class="p-2 text-right font-bold text-amber-800">Triệt tiêu 36× ✓</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Nhưng trong Ngspice, mạch tụ chuyển mạch (LPTV) không chạy được lệnh <span class='code-tag'>.ac</span> bình thường! Vậy ta đo đường Bode và Coherent FFT toàn mạch bằng thủ thuật gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 15 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s16" data-notes="Giải thích lý do không thể chạy .ac cho mạch tụ chuyển mạch và quy trình Strobe cuối pha Phi2 + method=gear.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Thủ Thuật Mô Phỏng LPTV Trên Ngspice</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Đo Toàn Mạch BSIM4: Lệnh <span class='code-tag'>.tran</span> + <span class='code-tag'>Strobe 98 ns</span> + <span class='code-tag'>method=gear</span></h2>
+      </div>
+      <span class="badge-blue">LPTV Verification</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_gui_top_workstation.png" alt="Top Level Workstation" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_gui_top_workstation.png:</span> Sơ đồ phân cấp <span class="code-tag">top_sc_lpf.sch</span> đang chạy Ngspice BSIM4 sóng vào–ra mượt mà &amp; log đo kết quả.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2">
+                <div class="ocean-card py-2">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">1. Vì sao cấm dùng lệnh .ac trên mạch SC?</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Lệnh <span class="code-tag">.ac</span> đóng băng khóa tại một điểm DC ($t=0$): nó thấy $R_{\text{on}}$ nối liên tục hoặc đứt hẳn chứ <strong>không thấy xung chuyển mạch $10\text{ MHz}$</strong>!</p>
+                </div>
+                <div class="gold-card py-2">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">2. Giải pháp: Strobe cuối pha $\Phi_2$ ($t = kT + 98\text{ ns}$)</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Trích mẫu sóng <span class="code-tag">.tran</span> tại đúng thời điểm $98\text{ ns}$ mỗi chu kỳ $100\text{ ns}$ (khi $C_1$ và $C_2$ vừa ổn định xong) để khớp từng điểm với chuỗi $y[n]$ của Python Golden!</p>
+                </div>
+                <div class="ieee-card py-2">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">3. Tham số chuẩn xác SPICE (.options)</div>
+                  <p class="text-[11.5px] text-sky-950 mt-0.5">Chạy <span class="code-tag">64 + 512 = 576 chu kỳ</span> ($57.6\ \mu\text{s}$), <span class="code-tag-gold">method=gear</span> chống rung tích phân số, <span class="code-tag">maxstep=2 ns</span> &amp; nguồn $58.59375\text{ kHz}$ ($M=3, N=512$).</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Dùng đúng dữ liệu sóng 11-tần Multisine và sóng bậc thang chuẩn hóa ấy đặt đè lên Golden Model — hai đường cong khớp nhau đến mức nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 16 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s17" data-notes="Phân tích đồ thị đè hình giữa Python Golden và Ngspice BSIM4 qua phép đo 11-tone Schroeder Multisine.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Đối Chiếu Sóng Thời Gian &amp; Đáp Ứng Tần Số Multisine</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Khớp Sóng Thời Gian &amp; Bode Đa Tần: Golden ($187.68$) vs. Pre-Layout ($193.97\text{ kHz}$)</h2>
+      </div>
+      <span class="badge-ocean">Overlay Δfc = +3.36%</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_prelayout_vs_golden_time_bode.png" alt="Pre-Layout vs Golden Time & Bode" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_prelayout_vs_golden_time_bode.png:</span> Sóng bậc thang ra $V_{\text{out}}(t)$ khớp biên độ ($189.38$ vs $190.90\text{ mV}_p$) &amp; 11 điểm Bode Multisine bám sát lý thuyết $H(z)$.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Kỹ thuật Schroeder 11-Tone (<span class="code-tag">tb_top_bode</span>)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Thay vì chạy 11 file <span class="code-tag">.tran</span> rời rạc, ta cộng 11 sóng sin pha Schroeder ($39.06\text{ kHz} \to 3.125\text{ MHz}$) vào duy nhất 1 lần chạy $N=256$ rồi lấy $H(f) = Y(f)/X(f)$!
+                  </p>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Kết quả So khớp Bode 3-dB</div>
+                  <ul class="text-xs text-sky-950 mt-1 space-y-1 list-disc pl-4">
+                    <li><strong>Golden Model:</strong> $187.675\text{ kHz}$</li>
+                    <li><strong>Pre-Layout SPICE:</strong> <span class="mono font-bold text-sky-800">$193.972\text{ kHz}$</span></li>
+                    <li><strong>Độ lệch $\Delta f_c$:</strong> <span class="mono font-bold text-amber-900">$+3.36\%$</span> (Nhỏ hơn hẳn ngưỡng Gate 3 là $\pm 5\%$ ✓).</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đáp ứng tần số và sóng thời gian đã rất sát Golden Model — còn phổ méo hài phi tuyến trên miền tần số FFT (<span class='code-tag'>SFDR, THD, ENOB</span>) đạt chuẩn bao nhiêu bit?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 17 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s18" data-notes="Phân tích phổ Coherent FFT và nguồn gốc vật lý của hài bậc 2/bậc 3 trong cấu trúc Single-Ended.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Phân Tích Phổ Coherent FFT 512-Điểm</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Phổ Coherent FFT Ngspice BSIM4: $\text{SFDR}=54.14\text{ dB},\ \text{ENOB}=8.62\text{ bits}$</h2>
+      </div>
+      <span class="badge-gold">Spectral Integrity</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-4 items-center">
+              <div class="col-span-8 fig-frame">
+                <img src="figs/w3_prelayout_vs_golden_fft.png" alt="Pre-Layout vs Golden FFT" class="max-h-[385px] w-auto object-contain rounded" />
+                <p class="text-[11px] text-sky-900 mt-1.5 font-medium text-center">
+                  <span class="mono font-bold text-sky-700">w3_prelayout_vs_golden_fft.png:</span> Phổ FFT $N=512$ ($f_0=58.59375\text{ kHz}, A_{\text{in}}=0.20\text{ V}_p$) — Đáy nhiễu &amp; đỉnh hài bậc 2, bậc 3 lộ rõ trên BSIM4.
+                </p>
+              </div>
+              <div class="col-span-4 flex flex-col gap-2.5">
+                <div class="ocean-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Các Chỉ số Phổ Đo Thực (Iter 2)</div>
+                  <table class="ieee-table text-xs mt-1.5">
+                    <thead><tr><th class="p-1.5 text-left">Chỉ số FFT</th><th class="p-1.5 text-right">Pre-Layout</th></tr></thead>
+                    <tbody>
+                      <tr class="row-gold"><td class="p-1.5 font-semibold">SFDR (Khoảng động)</td><td class="p-1.5 text-right font-bold text-amber-800 mono">54.14 dB</td></tr>
+                      <tr><td class="p-1.5 font-semibold">THD (Độ méo tổng)</td><td class="p-1.5 text-right font-bold text-sky-700 mono">−53.67 dB (0.207%)</td></tr>
+                      <tr><td class="p-1.5 font-semibold">SNDR / ENOB</td><td class="p-1.5 text-right font-bold text-sky-700 mono">53.66 dB / 8.62 b</td></tr>
+                      <tr><td class="p-1.5 font-semibold">HD₂ / HD₃</td><td class="p-1.5 text-right font-bold text-sky-700 mono">−54.06 / −59.13 dBc</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="gold-card py-2 text-xs text-sky-950">
+                  <strong>Bản chất vật lý:</strong> Đỉnh hài bậc 2 ($HD_2=-54.06\text{ dBc}$) xuất phát từ tính bất đối xứng tự nhiên của kiến trúc Single-Ended + bơm điện tích phụ thuộc áp tín hiệu của <span class="code-tag">TG1</span> — hoàn toàn khớp dự đoán lý thuyết!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Tất cả kết quả đo từng khối và toàn mạch BSIM4 đã có — đối chiếu từng điều kiện một với bảng Cổng Kiểm Định Tuần 3 (Gate 3), chúng ta đạt 100% chưa?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 18 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s19" data-notes="Tất cả tiêu chí Gate Tuần 3 đều đạt vượt mức, đặc biệt fc=+3.36% &lt; 5% và SFDR=54.14 dB.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Nghiệm Thu Cổng Kiểm Định Tuần 3 (Verification Gate 3)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Đối Chiếu 2 Cột Chính Thức: Golden Model vs. Pre-Layout SPICE BSIM4</h2>
+      </div>
+      <span class="badge-gold">Verification Gate 3: PASSED</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-2.5">
+              <table class="ieee-table text-xs">
+                <thead>
+                  <tr>
+                    <th class="p-2 text-left">Hạng mục Kiểm định (Gate Tuần 3)</th>
+                    <th class="p-2 text-right">Yêu cầu Chốt (Spec)</th>
+                    <th class="p-2 text-right">Golden (Tuần 2)</th>
+                    <th class="p-2 text-right">Pre-Layout (Tuần 3)</th>
+                    <th class="p-2 text-center">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="p-2 font-semibold">Khoảng không chồng lấn $t_{\text{nov},12} / t_{\text{nov},21}$</td><td class="p-2 text-right">$2.0\text{–}5.0\text{ ns}$</td><td class="p-2 text-right mono">2.92 ns (ref)</td><td class="p-2 text-right font-bold text-sky-700 mono">3.116 / 3.092 ns</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                  <tr><td class="p-2 font-semibold">Nội trở khóa $R_{\text{on}}(0.9\text{ V}) / R_{\text{on,max}}$</td><td class="p-2 text-right">$&lt; 5.0\text{ k}\Omega$</td><td class="p-2 text-right mono">5.0 kΩ (budget)</td><td class="p-2 text-right font-bold text-sky-700 mono">3.713 / 4.431 kΩ</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                  <tr><td class="p-2 font-semibold">Bão hòa 5T-OTA <span class="code-tag">XM1–XM5</span> (.op)</td><td class="p-2 text-right">$V_{DS} > V_{DSAT}$</td><td class="p-2 text-right mono">Lý tưởng</td><td class="p-2 text-right font-bold text-sky-700 mono">+136.6 đến +970.5 mV</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                  <tr><td class="p-2 font-semibold">Độ lợi &amp; Tốc độ OTA ($A_{OL} / \text{GBW} / \text{PM}$)</td><td class="p-2 text-right">&gt;$35\text{ dB}$ / &gt;$10\text{ M}$ / $\ge 60^\circ$</td><td class="p-2 text-right mono">41.6 / 43.9 / 81.3</td><td class="p-2 text-right font-bold text-sky-700 mono">41.62 dB / 43.61 M / 81.05°</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                  <tr class="row-gold"><td class="p-2 font-bold">Tần số cắt toàn mạch $f_{c,\text{SC}}$</td><td class="p-2 text-right font-bold">$|\Delta f_c| &lt; 5\%$</td><td class="p-2 text-right font-bold mono">187.675 kHz</td><td class="p-2 text-right font-extrabold text-amber-800 mono">193.972 kHz (+3.36%)</td><td class="p-2 text-center"><span class="badge-gold">PASS ✓</span></td></tr>
+                  <tr><td class="p-2 font-semibold">Phổ FFT (<span class="code-tag">SFDR / THD / ENOB</span>)</td><td class="p-2 text-right">&gt;$50\text{ dB}$</td><td class="p-2 text-right mono">149.50 dB (float64)</td><td class="p-2 text-right font-bold text-sky-700 mono">54.14 dB / 0.207% / 8.62 b</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                  <tr><td class="p-2 font-semibold">Biên độ ra tại $58.59\text{ kHz}$ &amp; Sạch ERC</td><td class="p-2 text-right">ERC = 0</td><td class="p-2 text-right mono">190.90 mVp</td><td class="p-2 text-right font-bold text-sky-700 mono">189.38 mVp • 9 Cell ERC=0</td><td class="p-2 text-center"><span class="badge-ocean">PASS ✓</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Sơ đồ Schematic đã xanh mướt 100% qua Gate Tuần 3 — nhưng nếu ta cứ thế gửi bản Schematic này đi sản xuất thì có ra được con chip chạy thật không? Bước cuối cùng Tuần 4 là gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 19 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s20" data-notes="Kết thúc Tuần 3 và mở ra chuỗi câu hỏi cho Tuần 4: Thiết kế Layout vật lý GDSII &amp; Post-Layout PEX.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Kết Luận Tuần 3 &amp; Khởi Động Giai Đoạn Thực Thi Silicon</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Sẵn Sàng Sang Tuần 4: Từ Schematic Xschem Đến Bản Vẽ Vật Lý GDSII</h2>
+      </div>
+      <span class="badge-blue">Handoff to Week 4</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5 items-center">
+              <div class="col-span-6 ocean-card py-4">
+                <div class="text-xs font-bold uppercase text-sky-800 mono">Tài sản Bàn giao Sau Tuần 3</div>
+                <ul class="mt-2.5 space-y-2 text-sm text-sky-950 list-disc pl-4">
+                  <li><strong>9 file Schematic &amp; Symbol Xschem</strong> chuẩn IEEE (<span class="code-tag">ERC = 0</span>), sạch lỗi kết nối.</li>
+                  <li><strong>Cấu hình chốt tối ưu:</strong> <span class="code-tag">TG 2/6 µm</span> + tụ đơn vị MIM <span class="code-tag">100 fF</span> + bù chọn lọc <span class="code-tag">XDUM2</span> tại $V_X$.</li>
+                  <li><strong>Netlist tham chiếu <span class="code-tag">top_sc_lpf_xschem.spice</span>:</strong> Làm “chân lý đối chiếu” bắt buộc cho bài kiểm tra <span class="mono font-bold text-amber-800">Netgen LVS</span> ở Tuần 4!</li>
+                </ul>
+              </div>
+              <div class="col-span-6 gold-card py-4">
+                <div class="text-xs font-bold uppercase text-amber-800 mono">Cạm bẫy Chờ đón Trên Silicon Thật (Tuần 4)</div>
+                <ul class="mt-2.5 space-y-2 text-sm text-sky-950 list-disc pl-4">
+                  <li>Khi đi dây đồng/nhôm (<span class="code-tag">met1–met4</span>), mỗi đoạn dây kim loại đều sinh thêm <strong>tụ ghép ký sinh $C_{\text{wire}}$</strong>. Nút $V_1$ rất nhỏ ($100\text{ fF}$) chỉ cần vướng thêm $5\text{ fF}$ dây là $f_c$ dịch $+5\%$!</li>
+                  <li>Xung số $10\text{ MHz}$ có thể xuyên qua đế Silicon làm nhiễu OTA.</li>
+                  <li>Lệch oxit trên phiến wafer dễ phá hỏng tỷ lệ vàng $C_2 / C_1 = 8.0$.</li>
+                </ul>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bước sang <strong>Tuần 4</strong>: Ta phải bố trí mặt bằng, vẽ tụ Common-Centroid, kiểm định DRC/LVS và chạy mô phỏng ký sinh PEX thế nào để con chip thực sự sẵn sàng Tape-out?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 3: Thiết Kế Schematic Xschem Chuẩn IEEE &amp; Kiểm Chứng BSIM4 Pre-Layout • <span class="mono font-bold text-sky-900">Slide 20 / 20</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Speaker Notes Drawer (Press N) -->
+<div id="notes-panel">
+  <div class="flex items-center justify-between border-b border-sky-200 pb-1.5 mb-2">
+    <span class="text-xs font-bold uppercase tracking-wider text-sky-700 mono">Kịch bản Dẫn dắt Thuyết trình (Phím N)</span>
+    <button onclick="toggleNotes()" class="text-amber-700 hover:text-sky-800 text-xs font-bold mono">[Đóng]</button>
+  </div>
+  <div id="notes-text"></div>
+</div>
+
+<!-- Bottom-Left Week Switcher -->
+<div class="week-switcher hud-pill fixed bottom-2 left-4 flex items-center gap-1 px-2 py-1 rounded-full z-50">
+  <a href="index.html" class="nav-link">Trọn Bộ 4 Tuần</a>
+  <a href="week1_slides.html" class="nav-link">Tuần 1: Lý Thuyết</a>
+  <a href="week2_slides.html" class="nav-link">Tuần 2: Python & Sizing</a>
+  <a href="week3_slides.html" class="nav-link current">Tuần 3: Xschem & SPICE</a>
+  <a href="week4_slides.html" class="nav-link">Tuần 4: Layout & PEX</a>
+  
+</div>
+
+<!-- Bottom-Right Navigation HUD -->
+<div class="nav-controls hud-pill fixed bottom-2 right-4 flex items-center gap-2 px-3 py-1 rounded-full text-xs mono z-50">
+  <button onclick="toggleNotes()" class="px-2 py-0.5 hover:text-amber-600 font-bold border-r border-sky-200 pr-2.5" title="Speaker Notes (N)">Notes (N)</button>
+  <button onclick="go(-1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Trước (←)">◀</button>
+  <span id="counter" class="font-bold text-sky-900">01 / 20</span>
+  <button onclick="go(1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Tiếp (→)">▶</button>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-track">
+  <div id="progress-fill" class="progress-fill" style="width: 5.00%;"></div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progress-fill');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesText = document.getElementById('notes-text');
+  let idx = 0;
+
+  function show(i) {
+    idx = (i + slides.length) % slides.length;
+    slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+    counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+    progressFill.style.width = (((idx + 1) / slides.length) * 100).toFixed(2) + '%';
+    notesText.textContent = slides[idx].dataset.notes || '';
+  }
+  function go(d) { show(idx + d); }
+  function jumpToId(id) {
+    const pos = slides.findIndex((s) => s.id === id);
+    if (pos >= 0) show(pos);
+  }
+  function toggleNotes() { notesPanel.classList.toggle('open'); }
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key.toLowerCase() === 'n') toggleNotes();
+  });
+  if (window.location.hash) {
+    const target = window.location.hash.slice(1);
+    const pos = slides.findIndex((s) => s.id === target);
+    if (pos >= 0) {
+      idx = pos;
+    } else {
+      const m = target.match(/^s(\d+)$/);
+      if (m) {
+        const n = parseInt(m[1], 10) - 1;
+        if (n >= 0 && n < slides.length) idx = n;
+      }
+    }
+  }
+  show(idx);
+  fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/ota_5t.sch
+.subckt ota_5t INP INN IBIAS VOUT VDD VSS
+*.iopin VDD
+*.opin VOUT
+*.ipin INP
+*.ipin INN
+*.ipin IBIAS
+*.iopin VSS
+XM3 net1 net1 VDD VDD sky130_fd_pr__pfet_01v8 L=0.80 W=16.0 nf=4 ad=2.32 as=3.48 pd=17.16 ps=25.74 nrd=0.018125 nrs=0.018125 sa=0
++ sb=0 sd=0 mult=1
+XM4 VOUT net1 VDD VDD sky130_fd_pr__pfet_01v8 L=0.80 W=16.0 nf=4 ad=2.32 as=3.48 pd=17.16 ps=25.74 nrd=0.018125 nrs=0.018125 sa=0
++ sb=0 sd=0 mult=1
+XM1 net1 INP net2 VSS sky130_fd_pr__nfet_01v8 L=0.80 W=32.0 nf=8 ad=4.64 as=5.8 pd=34.32 ps=42.9 nrd=0.0090625 nrs=0.0090625 sa=0
++ sb=0 sd=0 mult=1
+XM2 VOUT INN net2 VSS sky130_fd_pr__nfet_01v8 L=0.80 W=32.0 nf=8 ad=4.64 as=5.8 pd=34.32 ps=42.9 nrd=0.0090625 nrs=0.0090625 sa=0
++ sb=0 sd=0 mult=1
+XM5 net2 IBIAS VSS VSS sky130_fd_pr__nfet_01v8 L=1.00 W=24.0 nf=6 ad=3.48 as=4.64 pd=25.74 ps=34.32 nrd=0.0120833333333333
++ nrs=0.0120833333333333 sa=0 sb=0 sd=0 mult=1
+XM6 IBIAS IBIAS VSS VSS sky130_fd_pr__nfet_01v8 L=1.00 W=24.0 nf=6 ad=3.48 as=4.64 pd=25.74 ps=34.32 nrd=0.0120833333333333
++ nrs=0.0120833333333333 sa=0 sb=0 sd=0 mult=1
+.ends

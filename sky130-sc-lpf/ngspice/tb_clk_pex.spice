@@ -1,0 +1,34 @@
+* Week 4 Task 4.3a Testbench: 10 MHz Non-Overlapping Clock Generator (Post-Layout PEX)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/layout/non_overlap_clk_pex.spice"
+
+Vdd vdd 0 1.8
+Vss vss 0 0.0
+Vclk clk 0 pulse(0 1.8 5n 0.4n 0.4n 49.6n 100n)
+
+XCLK clk phi1 phi1_b phi2 phi2_b vdd vss non_overlap_clk
+
+* Same external TG gate + routing load baseline (25 fF) PLUS extracted internal layout parasitics!
+CL1  phi1   0 25f
+CL1B phi1_b 0 25f
+CL2  phi2   0 25f
+CL2B phi2_b 0 25f
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+tran 10p 250n
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_clk_pex.raw v(clk) v(phi1) v(phi1_b) v(phi2) v(phi2_b)
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_clk_pex.txt v(clk) v(phi1) v(phi1_b) v(phi2) v(phi2_b)
+
+meas tran t_nov_12 trig v(phi1) val=0.9 td=45n fall=1 targ v(phi2) val=0.9 td=45n rise=1
+meas tran t_nov_21 trig v(phi2) val=0.9 td=95n fall=1 targ v(phi1) val=0.9 td=95n rise=1
+meas tran tr_phi1  trig v(phi1) val=0.18 td=95n rise=1 targ v(phi1) val=1.62 td=95n rise=1
+meas tran tf_phi1  trig v(phi1) val=1.62 td=45n fall=1 targ v(phi1) val=0.18 td=45n fall=1
+let overlap_v = v(phi1) * v(phi2)
+meas tran max_overlap_v2 max overlap_v from=40n to=220n
+quit
+.endc
+.end

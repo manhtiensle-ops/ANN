@@ -1,0 +1,17 @@
+====================================================================
+ SKY130-SC-LPF — MAGIC VLSI 8.3 FULL DRC SIGN-OFF REPORT (sky130A)
+ Style: drc(full), Euclidean: ON
+====================================================================
+CELL_DRC inv_in: 0
+CELL_DRC inv_del: 0
+CELL_DRC inv_buf: 0
+CELL_DRC nand2_cell: 0
+CELL_DRC non_overlap_clk: 0
+CELL_DRC tg_switch: 0
+CELL_DRC tg_dummy: 0
+CELL_DRC sc_core: 0
+CELL_DRC ota_5t: 0
+CELL_DRC top_sc_lpf: 0
+====================================================================
+ TOTAL MAGIC DRC ERRORS ACROSS ALL 10 HIERARCHICAL CELLS: 0 [PASS]
+====================================================================

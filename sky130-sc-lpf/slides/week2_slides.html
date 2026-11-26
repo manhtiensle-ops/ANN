@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SKY130-SC-LPF — Tuần 2: Mô Hình Hóa Python &amp; Sizing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+:root {
+  --ink: #0C4A6E;
+  --ink-dark: #082F49;
+  --ocean: #0284C7;
+  --ocean-deep: #0369A1;
+  --ocean-soft: #E0F2FE;
+  --sky-bg: #F7FBFF;
+  --gold: #D97706;
+  --gold-bright: #F59E0B;
+  --gold-soft: #FEF3C7;
+  --gold-pale: #FFFBEB;
+  --white: #FFFFFF;
+  --border-blue: #BAE6FD;
+  --border-gold: #FDE68A;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #DBEAFE 0%, #F0F9FF 50%, #FEF3C7 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-dark);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+.katex, .code-tag, .code-tag-gold, .normal-case { text-transform: none !important; }
+.code-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.code-tag-gold {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+#deck {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: center center;
+}
+.slide {
+  width: 1280px;
+  height: 720px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 44px 36px 44px;
+  background: var(--sky-bg);
+  border-top: 5px solid #0284C7;
+  border-bottom: 3px solid #F59E0B;
+  overflow: hidden;
+  box-shadow: 0 22px 55px rgba(3, 105, 161, 0.16);
+}
+.slide::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0) 70%);
+  pointer-events: none;
+}
+.slide.active { display: flex; }
+.slide-cover {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 56%, #FEF3C7 100%);
+  color: #082F49;
+  border-top: 7px solid #0369A1;
+  border-bottom: 5px solid #F59E0B;
+}
+.slide-cover::after {
+  content: "";
+  position: absolute;
+  bottom: -110px;
+  left: -90px;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.10) 0%, rgba(2, 132, 199, 0) 70%);
+  pointer-events: none;
+}
+.ieee-card {
+  background: #FFFFFF;
+  border: 1px solid #BAE6FD;
+  border-radius: 13px;
+  padding: 14px 18px;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.06);
+}
+.gold-card {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.08);
+}
+.ocean-card {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 1.5px solid #0284C7;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.08);
+}
+.fig-frame {
+  background: #FFFFFF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 14px rgba(3, 105, 161, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.badge-ocean {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #7DD3FC;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-gold {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-blue {
+  background: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #93C5FD;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.ieee-table { width: 100%; border-collapse: collapse; }
+.ieee-table thead tr {
+  background: linear-gradient(90deg, #0369A1 0%, #0284C7 100%);
+  color: #FFFFFF;
+  border-bottom: 2.5px solid #F59E0B;
+}
+.ieee-table tbody tr:nth-child(even) { background: #F0F9FF; }
+.ieee-table tbody tr:nth-child(odd) { background: #FFFFFF; }
+.ieee-table tbody tr.row-gold { background: #FFFBEB; }
+.transition-hook {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #FFFBEB 0%, #EFF6FF 100%);
+  border: 1px solid #FDE68A;
+  border-left: 5px solid #F59E0B;
+  border-radius: 9px;
+  padding: 6px 14px;
+  font-size: 12.2px;
+  color: #0C4A6E;
+  font-weight: 500;
+}
+.katex { font-size: 0.99em !important; }
+.progress-track {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(2, 132, 199, 0.14);
+  z-index: 40;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284C7, #38BDF8, #F59E0B);
+  transition: width 0.25s ease;
+}
+#notes-panel {
+  position: fixed;
+  left: 22px;
+  bottom: 48px;
+  max-width: 790px;
+  background: #FFFFFF;
+  color: #082F49;
+  border: 2px solid #0284C7;
+  border-top: 5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 13px 18px;
+  font-size: 13px;
+  line-height: 1.52;
+  box-shadow: 0 14px 36px rgba(3, 105, 161, 0.20);
+  z-index: 55;
+  display: none;
+}
+#notes-panel.open { display: block; }
+.hud-pill {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #7DD3FC;
+  color: #0369A1;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.14);
+}
+.nav-link {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0369A1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.nav-link:hover { background: #E0F2FE; }
+.nav-link.current {
+  background: linear-gradient(90deg, #0284C7, #0369A1);
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35);
+}
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body {
+    background: #FFFFFF;
+    overflow: visible;
+    height: auto;
+    width: auto;
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #deck { transform: none !important; width: 1280px; height: auto; }
+  .slide {
+    position: relative !important;
+    display: flex !important;
+    page-break-after: always;
+    break-after: page;
+    box-shadow: none !important;
+  }
+  .nav-controls, .week-switcher, .progress-track, #notes-panel { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <section class="slide slide-cover active" id="w2-start" data-notes="Slide mở đầu Tuần 2 đặt ra 4 câu hỏi dẫn dắt cho toàn bộ người xem: Tuần 2 là gì, Golden Model là gì, Python mô phỏng những việc gì, và các công thức Tuần 1 được lập trình ra sao.">
+    
+            <div class="flex items-center justify-between border-b-2 border-sky-200 pb-3 relative z-10">
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-md bg-sky-600 text-white text-xs font-bold tracking-widest uppercase mono">IEEE / ISSCC DESIGN SERIES</span>
+                <span class="text-sky-900 text-sm font-semibold mono">PDK: SkyWater 130nm (sky130A) • Behavioral + Sizing</span>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold mono">TUẦN 02 / 04 — GOLDEN MODEL &amp; SIZING</span>
+            </div>
+
+            <div class="my-auto py-2 relative z-10">
+              <p class="text-amber-700 font-bold tracking-wider uppercase text-xs mono mb-1.5">Behavioral Modeling, Error Budgeting &amp; gm/ID Transistor Sizing</p>
+              <h1 class="text-[44px] font-extrabold tracking-tight leading-tight text-sky-950 max-w-5xl">
+                Mô Hình Hóa Python (Golden Model)<br />
+                <span class="text-sky-600">&amp; Tính Toán Sizing $W/L$ Cho Sky130A</span>
+              </h1>
+              <p class="text-sky-900 text-base mt-3 max-w-4xl">
+                Tuần 2 giải đáp trọn vẹn 4 câu hỏi cốt lõi: <strong class="text-amber-800">Tuần 2 làm gì?</strong> $\to$ <strong class="text-sky-700">Golden Model là gì?</strong> $\to$ <strong class="text-sky-950">Python mô phỏng những gì?</strong> $\to$ <strong class="text-amber-800">Ứng dụng công thức lý thuyết nào vào Sizing?</strong>
+              </p>
+
+              <div class="grid grid-cols-4 gap-4 mt-8">
+                <div class="ocean-card p-4">
+                  <div class="text-sky-800 text-xs uppercase font-bold">1. Tần số cắt Golden</div>
+                  <div class="text-2xl font-extrabold text-sky-700 mt-1 mono">$187.675\text{ kHz}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Lệch $-5.66\%$ so với $RC$ liên tục</div>
+                </div>
+                <div class="gold-card p-4">
+                  <div class="text-amber-900 text-xs uppercase font-bold">2. Trần vật lý $kT/C$ FFT</div>
+                  <div class="text-2xl font-extrabold text-amber-800 mt-1 mono">$\text{SNR} = 72.09\text{ dB}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">$\text{ENOB} = 11.66\text{ bits}$ ($V_p = 0.4\text{ V}$)</div>
+                </div>
+                <div class="ocean-card p-4">
+                  <div class="text-sky-800 text-xs uppercase font-bold">3. 5T-OTA BSIM4 Verified</div>
+                  <div class="text-2xl font-extrabold text-sky-700 mt-1 mono">$A_{OL} = 41.62\text{ dB}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">$\text{GBW} = 43.9\text{ MHz},\ \text{PM} = 81.3^\circ$</div>
+                </div>
+                <div class="gold-card p-4">
+                  <div class="text-amber-900 text-xs uppercase font-bold">4. Non-Overlap Clock</div>
+                  <div class="text-2xl font-extrabold text-amber-800 mt-1 mono">$t_{\text{nov}} = 2.92\text{ ns}$</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Đối xứng 2 cạnh trong $[2, 5]\text{ ns}$</div>
+                </div>
+              </div>
+            </div>
+            
+    <div class="space-y-1.5 relative z-10">
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi dẫn nhập →</span>
+        <span>Đã có đầy đủ công thức lý thuyết ở Tuần 1 rồi — vậy bản chất Tuần 2 là gì và tại sao ta không nhảy thẳng sang vẽ Schematic Xschem luôn?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/75 font-medium pt-0.5">
+        Data Source: metrics_golden.json • nonideal_budget.json • sizing_table.json • <span class="mono font-bold">Slide 01 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s2" data-notes="Tuần 2 là giai đoạn Mô hình hóa Hành vi (Behavioral Modeling) và Tính toán Kích thước (Sizing). Không có Tuần 2, kỹ sư sẽ mò mẫm thông số trong SPICE rất chậm và dễ nhầm nguyên nhân lỗi.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Định Nghĩa &amp; Mục Đích Chiến Lược Của Tuần 2</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tuần 2 Là Gì? Tại Sao Phải Qua Bước Python Trước Khi Vẽ Schematic?</h2>
+      </div>
+      <span class="badge-gold">Why Behavioral Modeling?</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">Sai lầm phổ biến của người mới thiết kế IC</span>
+                  <h3 class="text-lg font-extrabold text-sky-950 mt-1">Vẽ thẳng Transistor vào Xschem/SPICE</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-sky-950 list-disc pl-4">
+                    <li>Khi mạch chạy sai $f_c$ hoặc méo hài, <strong>không biết do sai công thức hệ thống hay sai kích thước MOSFET</strong>.</li>
+                    <li>Mỗi lần chạy <span class="code-tag">.tran</span> toàn mạch BSIM4 tốn hàng chục giây–phút, <strong>không thể quét hàng nghìn tổ hợp</strong> $R_{\text{on}}, A_{OL}, W/L$.</li>
+                    <li>Không có mốc chuẩn đối chiếu nên dễ chấp nhận sai số ngầm.</li>
+                  </ul>
+                </div>
+                <div class="bg-white border border-amber-300 rounded-lg p-2.5 text-xs font-bold text-amber-900 text-center mt-2">
+                  Tuần 2 là cầu nối Số hóa &amp; Định cỡ trước khi mở Xschem!
+                </div>
+              </div>
+
+              <div class="col-span-7 flex flex-col gap-3 justify-center">
+                <div class="ocean-card border-l-4 border-l-sky-600 py-3">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Mục đích 1 • Dựng “Thước đo Chuẩn” (Golden Baseline)</div>
+                  <p class="text-sm text-sky-950 mt-1">Biến các phương trình toán Tuần 1 thành bộ mô phỏng số chính xác trên Python để xuất ra phổ chuẩn, sóng bậc thang chuẩn và tần số cắt chuẩn $187.675\text{ kHz}$.</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-amber-500 py-3">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Mục đích 2 • Định lượng Ngân sách Lỗi Phi Lý Tưởng</div>
+                  <p class="text-sm text-sky-950 mt-1">Tiêm từng khiếm khuyết vật lý ($R_{\text{on}}$ phi tuyến, $A_{OL}$ hữu hạn, Charge Injection, $kT/C$) để tìm ngưỡng tối đa mà mạch còn đạt chuẩn.</p>
+                </div>
+                <div class="ocean-card border-l-4 border-l-blue-600 py-3">
+                  <div class="text-xs font-bold uppercase text-blue-800 mono">Mục đích 3 • Tính Sizing $W/L$ &amp; Kiểm trước BSIM4</div>
+                  <p class="text-sm text-sky-950 mt-1">Dùng phương pháp $g_m/I_D$ tính trọn bộ kích thước $W, L, \text{nf}, \text{mult}$ cho 4 khối rồi tự động gọi Ngspice xác minh trước khi bàn giao sang Tuần 3.</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Trong 3 mục đích trên, khái niệm cốt lõi nhất là <strong>“Golden Model”</strong> — vậy chính xác Golden Model là gì và nó hoạt động ra sao?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 02 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s3" data-notes="Golden Model là mô hình toán-lý chuẩn xác bằng số thực 64-bit, đóng vai trò cột tham chiếu số 1 trong bảng đối chiếu 3 cột xuyên suốt Tuần 2, Tuần 3 và Tuần 4.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Khái Niệm Cốt Lõi Trong Kiểm Chứng Vi Mạch</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Golden Model (Mô Hình Vàng) Là Gì &amp; Vai Trò Trong Chuỗi Thiết Kế Chip?</h2>
+      </div>
+      <span class="badge-ocean">Single Source of Truth</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-6 ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">Định nghĩa chuẩn công nghiệp Bán dẫn</span>
+                  <h3 class="text-lg font-extrabold text-sky-950 mt-1">“Chân Lý Tham Chiếu” Độc Lập Với Transistor</h3>
+                  <p class="text-sm text-sky-900 mt-2">
+                    <strong>Golden Model</strong> là chương trình mô phỏng thuần toán–vật lý (chính xác 64-bit <span class="code-tag">Float64</span>), chỉ giải phương trình bảo toàn điện tích $H(z)$ và các định luật vật lý cơ bản — hoàn toàn <strong>không phụ thuộc mô hình BSIM4 hay ký sinh dây</strong>.
+                  </p>
+                </div>
+                <div class="gold-card mt-3 py-2.5">
+                  <div class="text-xs font-bold text-amber-900 uppercase mono">Ví dụ so sánh dễ hiểu</div>
+                  <p class="text-xs text-sky-950 mt-1">
+                    Golden Model giống như <strong>bản thiết kế khí động học lý tưởng trong hầm gió số</strong>: nếu kết quả SPICE/Layout lệch xa Golden Model, ta biết ngay sự cố đến từ <em>nội trở khóa, cực phụ OTA hay tụ ký sinh dây</em>!
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-span-6 flex flex-col gap-3 justify-center">
+                <div class="ocean-card py-2.5">
+                  <div class="flex items-center justify-between"><span class="text-xs font-bold uppercase text-sky-800 mono">1. Cột 1: Golden Model (Tuần 2)</span><span class="badge-ocean">Mốc Gốc 0.00%</span></div>
+                  <p class="text-xs text-sky-950 mt-1">$f_{c,\text{Golden}} = \mathbf{187.675\text{ kHz}}$, $\text{THD} = -316\text{ dB}$ (số học) &amp; $\text{SNR}_{kT/C} = \mathbf{72.09\text{ dB}}$ (trần nhiệt động).</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-blue-600 py-2.5">
+                  <div class="flex items-center justify-between"><span class="text-xs font-bold uppercase text-blue-700 mono">2. Cột 2: Pre-Layout SPICE (Tuần 3)</span><span class="badge-blue">Gate: $|\Delta f_c| &lt; 5\%$</span></div>
+                  <p class="text-xs text-sky-950 mt-1">Đo lưới transistor thật trên Xschem so trực tiếp với sóng bậc thang &amp; phổ FFT của Golden Model ($+3.36\%$ đạt chuẩn!).</p>
+                </div>
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="flex items-center justify-between"><span class="text-xs font-bold uppercase text-amber-800 mono">3. Cột 3: Post-Layout PEX (Tuần 4)</span><span class="badge-gold">Gate: 3-Col Match</span></div>
+                  <p class="text-xs text-sky-950 mt-1">Ghép cả 3 đường cong (Golden, Pre-Layout, Post-Layout PEX) lên cùng một hệ trục để chứng minh chip thật sau sản xuất vẫn bảo toàn đặc tuyến.</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Vậy cụ thể trong Tuần 2, <strong>mô phỏng trên Python là làm những việc gì</strong> và gồm mấy kịch bản mã nguồn?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 03 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s4" data-notes="Mô phỏng Python Tuần 2 gồm 3 việc lớn nối tiếp nhau: (1) Dựng Golden Model Bode/Transient/Coherent FFT; (2) Quét ngân sách lỗi phi lý tưởng; (3) Tính Sizing W/L và tự động gọi Ngspice kiểm tra sơ bộ.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I — Bức Tranh Toàn Cảnh 3 Mô-Đun Python</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Mô Phỏng Trên Python Là Làm Những Việc Gì? (3 Kịch Bản &amp; 3 Tệp JSON)</h2>
+      </div>
+      <span class="badge-ocean">python/*.py Architecture</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-3 px-4">
+              
+    <svg viewBox="0 0 1100 185" class="w-full h-[170px]">
+      
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+      <rect x="16" y="22" width="235" height="132" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2" />
+      <text x="133" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#B45309">1. Lý Thuyết Tuần 1</text>
+      <text x="133" y="72" text-anchor="middle" font-size="11.5" fill="#0C4A6E">H(z), fc=187.675 kHz</text>
+      <text x="133" y="92" text-anchor="middle" font-size="11.5" fill="#0C4A6E">kT/C, Ron, A_OL, ICMR</text>
+      <text x="133" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#D97706">week1_numbers.json</text>
+      <text x="133" y="136" text-anchor="middle" font-size="10.5" fill="#78350F">Đầu vào toán-lý khóa cứng</text>
+
+      <line x1="251" y1="88" x2="292" y2="88" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="298" y="22" width="245" height="132" rx="12" fill="#F0F9FF" stroke="#0284C7" stroke-width="2.2" />
+      <text x="420" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">2. golden_model.py</text>
+      <text x="420" y="72" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Bode H(z) vs RC</text>
+      <text x="420" y="92" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Quá độ đa tần ZOH</text>
+      <text x="420" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Coherent FFT N=16384 + kT/C</text>
+      <text x="420" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#0284C7">→ metrics_golden.json</text>
+
+      <line x1="543" y1="88" x2="584" y2="88" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="590" y="22" width="245" height="132" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2" />
+      <text x="712" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#B45309">3. nonideal_budget.py</text>
+      <text x="712" y="72" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Quét Ron(V) → Track THD</text>
+      <text x="712" y="92" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Quét A_OL → Sai số DC/cực</text>
+      <text x="712" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Đánh đổi W×L vs ΔV_CI</text>
+      <text x="712" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#D97706">→ nonideal_budget.json</text>
+
+      <line x1="835" y1="88" x2="876" y2="88" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="882" y="22" width="205" height="132" rx="12" fill="#E0F2FE" stroke="#0369A1" stroke-width="2.4" />
+      <text x="984" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">4. sizing_calc.py</text>
+      <text x="984" y="72" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Tính gm/ID 5T-OTA</text>
+      <text x="984" y="92" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Sizing W/L 4 khối</text>
+      <text x="984" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Gọi BSIM4 kiểm trước</text>
+      <text x="984" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#0369A1">→ sizing_table.json</text>
+    </svg>
+    
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div class="ocean-card py-2.5">
+                <div class="text-xs font-bold uppercase text-sky-800 mono">Việc 1 • <span class="code-tag">golden_model.py</span></div>
+                <ul class="mt-1.5 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>Vẽ &amp; đối chiếu Bode $H(z)$ với $RC$.</li>
+                  <li>Chạy quá độ đa tần $50\text{ kHz}+2\text{ MHz}$.</li>
+                  <li>Chạy <strong>Coherent FFT $N=16384$</strong> (có/không $kT/C$) xuất <span class="code-tag">metrics_golden.json</span>.</li>
+                </ul>
+              </div>
+              <div class="gold-card py-2.5">
+                <div class="text-xs font-bold uppercase text-amber-900 mono">Việc 2 • <span class="code-tag-gold">nonideal_budget.py</span></div>
+                <ul class="mt-1.5 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>Quét $R_{\text{on}}$ phi tuyến ($0.3\to 100\text{ k}\Omega$) đo méo hài động Track-and-Hold.</li>
+                  <li>Quét $A_{OL}$ ($10\to 70\text{ dB}$) đo sai số DC &amp; dịch cực.</li>
+                  <li>Tìm điểm ngọt kích thước <span class="code-tag">TG</span> ($W_n/W_p$).</li>
+                </ul>
+              </div>
+              <div class="ieee-card border-sky-400 py-2.5">
+                <div class="text-xs font-bold uppercase text-blue-700 mono">Việc 3 • <span class="code-tag">sizing_calc.py</span></div>
+                <ul class="mt-1.5 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>Tính tay $g_m/I_D$ giải cứu quỹ áp `ota_5t`.</li>
+                  <li>Chốt bảng $W, L, \text{nf}, \text{mult}$ cả 4 khối.</li>
+                  <li>Tự sinh netlist gọi <strong>Ngspice BSIM4</strong> tiền kiểm chứng trước Tuần 3.</li>
+                </ul>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Mỗi dòng code trong 3 kịch bản Python trên không viết tùy tiện — vậy ta đã <strong>ứng dụng những công thức lý thuyết nào</strong> vào Python?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 04 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s5" data-notes="Bảng tổng hợp 8 công thức lý thuyết Tuần 1 và cách chuyển hóa chính xác thành các hàm Python trong golden_model.py, nonideal_budget.py và sizing_calc.py.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I → Hồi II — Cầu Nối Công Thức Lý Thuyết Vào Mã Nguồn Python</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Ứng Dụng Những Công Thức Lý Thuyết Nào Vào Mô Phỏng Trên Python?</h2>
+      </div>
+      <span class="badge-gold">8 Equations → Python Code</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-xs">
+                <thead>
+                  <tr class="uppercase tracking-wider">
+                    <th class="py-2 px-3 text-left">Lý thuyết &amp; Công thức Gốc (Tuần 1)</th>
+                    <th class="py-2 px-3 text-left">Hàm / Thuật toán Python (<span class="mono">python/*.py</span>)</th>
+                    <th class="py-2 px-3 text-left">Kết quả Định lượng Thu được</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950 text-[11.8px]">
+                  <tr><td class="py-1.5 px-3 font-semibold">1. Hàm truyền miền $\mathcal{Z}$: $H(e^{j\omega T}) = \frac{\alpha}{1-(1-\alpha)e^{-j\omega T}}$</td><td class="py-1.5 px-3 mono text-sky-800">freq_response_sc() + arccos(143/144)</td><td class="py-1.5 px-3">$f_{c,\text{SC}} = \mathbf{187.675\text{ kHz}}$ ($-5.66\%$ vs $RC$)</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">2. Bảo toàn điện tích: $V_{\text{out}}[n] = \frac{8}{9}V_{\text{out}}[n-1]+\frac{1}{9}V_{\text{in}}[n]$</td><td class="py-1.5 px-3 mono text-sky-800">scipy.signal.lfilter([1/9],[1,-8/9], x)</td><td class="py-1.5 px-3">Sóng bậc thang ZOH, nén $2\text{ MHz}$ đi $10.03\times$</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">3. Lấy mẫu đồng bộ &amp; Hann: $f_0 = \frac{M}{N}f_{\text{clk}}, \gcd(M,N)=1$</td><td class="py-1.5 px-3 mono text-sky-800">rfft(v_ac*hann(16384)) / ENBW(1.5)</td><td class="py-1.5 px-3">$\text{SFDR}=296.2\text{ dB}, \text{THD}=-316.2\text{ dB}$ (0 rò phổ)</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">4. Nhiễu nhiệt 2 pha: $\sigma_{\Phi_1}^2=\frac{k_BT}{C_1},\ \sigma_{\Phi_2}^2=\frac{k_BT}{C_{\text{eq}}}$</td><td class="py-1.5 px-3 mono text-sky-800">simulate_ktc_sc_filter() → $k_BT/C_2$</td><td class="py-1.5 px-3">$v_n = 72.0\ \mu\text{V}_{\text{rms}}$, $\text{SNR} = \mathbf{72.09\text{ dB}}$ ($11.66\text{ b}$)</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">5. Bám mẫu phi tuyến: $\tau(V) = R_{\text{on}}(V)C_1$, $N_{\text{sub}}=24$</td><td class="py-1.5 px-3 mono text-sky-800">simulate_nonlinear_ron_thd()</td><td class="py-1.5 px-3">$R_{\text{on}} &lt; 5\text{ k}\Omega \implies \text{THD} = \mathbf{-105.1\text{ dB}}$</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">6. Đệm hồi tiếp hữu hạn: $A_{\text{buf}} = \frac{A_{OL}}{1+A_{OL}}$, Miller $C_{\text{in}}$</td><td class="py-1.5 px-3 mono text-sky-800">sweep_aol() (10 → 70 dB)</td><td class="py-1.5 px-3">$A_{OL} \ge 40\text{ dB} \implies \epsilon_A = 0.99\%, |\Delta f_c| = 0.94\%$</td></tr>
+                  <tr><td class="py-1.5 px-3 font-semibold">7. Tiêm điện tích &amp; Xuyên xung: $\Delta V_{\text{CI}}, \Delta V_{\text{CF}}$</td><td class="py-1.5 px-3 mono text-sky-800">sweep_charge_injection() ($W_n: 0.8\to 16$)</td><td class="py-1.5 px-3">Điểm ngọt $4/12\ \mu\text{m}$: $2.26\text{ k}\Omega$, $0.77\text{ mV}$ (+DUM)</td></tr>
+                  <tr class="row-gold"><td class="py-1.5 px-3 font-semibold">8. Định cỡ vùng trung bình: $g_m = (g_m/I_D)\cdot I_D$, $\text{GBW}=\frac{g_m}{2\pi C_L}$</td><td class="py-1.5 px-3 mono text-amber-900">sizing_calc.py + ngspice -b verify</td><td class="py-1.5 px-3">$A_{OL}=41.6\text{ dB}, \text{GBW}=43.9\text{ MHz}, \text{PM}=81.3^\circ$</td></tr>
+                </tbody>
+              </table>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Hãy đi sâu vào chi tiết từng bước: Bước 1 trong <span class="code-tag">golden_model.py</span> mô phỏng đáp ứng tần số Bode $H(z)$ vs. $RC$ như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 05 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s6" data-notes="So sánh trực tiếp công thức Python giữa mô hình RC liên tục (198.944 kHz) và mô hình miền Z chính xác (187.675 kHz), đặc biệt giải thích điểm Nyquist z=-1 cho pha quay về 0 độ.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Nhiệm vụ 2.1a: Thuật Toán Đáp Ứng Tần Số (<span class="code-tag">golden_model.py</span>)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Ứng Dụng Hàm Truyền $H(z)$ Để Giải Nghiệm Cắt Rời Rạc Chính Xác</h2>
+      </div>
+      <span class="badge-ocean">Frequency-Domain Math</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-2 gap-5">
+              <div class="ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Mô hình Xấp xỉ Liên tục (Mạch RC tương đương)</span>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2.5 my-2.5 text-center text-sm">
+                    $$R_{\text{eq}} = \frac{1}{f_{\text{clk}} C_1} = 1\text{ M}\Omega \implies H_{\text{RC}}(jf) = \frac{1}{1 + j\,f / f_{c,\text{RC}}}$$
+                  </div>
+                  <ul class="text-sm text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Công thức <span class="code-tag">FC_RC</span> $= \frac{1}{2\pi R_{\text{eq}} C_2} = \mathbf{198.944\text{ kHz}}$.</li>
+                    <li><strong>Hạn chế:</strong> Coi điện tích truyền liên tục vô hạn bước nhỏ, bỏ qua bản chất lấy mẫu rời rạc chu kỳ $T_{\text{clk}} = 100\text{ ns}$.</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-amber-50 border border-amber-200 text-xs text-amber-900 mt-2">
+                  Tại Nyquist $5\text{ MHz}$, $H_{\text{RC}}$ đoán $-28.04\text{ dB}, -87.7^\circ$ (sai lệch vật lý!).
+                </div>
+              </div>
+
+              <div class="ocean-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">2. Mô hình Rời rạc Chính xác ($H(e^{j2\pi f T_{\text{clk}}})$)</span>
+                  <div class="bg-white border border-sky-300 rounded-lg p-2.5 my-2.5 text-center text-sm">
+                    $$H(e^{j\omega T_{\text{clk}}}) = \frac{1/9}{1 - \frac{8}{9}e^{-j2\pi f / f_{\text{clk}}}}, \quad f_{c,\text{SC}} = \frac{f_{\text{clk}}}{2\pi}\arccos\!\left(\frac{143}{144}\right)$$
+                  </div>
+                  <ul class="text-sm text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Python quét lưới logarit $2000$ điểm từ $1\text{ kHz} \to 5\text{ MHz}$ (<span class="code-tag">f_clk/2</span>).</li>
+                    <li>Tính chính xác $f_{c,\text{SC}} = \mathbf{187.675\text{ kHz}}$ (lệch $-5.664\%$).</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-white border border-sky-300 text-xs text-sky-950 mt-2">
+                  Tại Nyquist ($z = -1$), $H(-1) = \frac{1/9}{17/9} = \frac{1}{17} = \mathbf{-24.61\text{ dB}},\ \angle H = \mathbf{0^\circ}$!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi chạy hai hàm <span class="code-tag">freq_response_sc()</span> và <span class="code-tag">freq_response_rc()</span> trên Python, đồ thị Bode thực tế khác nhau thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 06 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s7" data-notes="Biểu đồ Bode 300 DPI trích từ golden_model.py xác nhận dịch tần số cắt -5.664%, suy hao 50 kHz -0.30 dB, nén nhiễu 2 MHz -20.02 dB và pha quay về 0 độ ở Nyquist 5 MHz.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Nhiệm vụ 2.1a: Kết Quả Đồ Thị Bode Python</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Đồ Thị Bode: Hàm Truyền Rời Rạc $H(z)$ vs. $RC$ Liên Tục</h2>
+      </div>
+      <span class="badge-ocean">week2_bode_sc_vs_rc.png</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-7 fig-frame py-2">
+                <img src="figs/week2_bode_sc_vs_rc.png" alt="Bode SC vs RC" class="max-h-[430px] w-auto object-contain" />
+              </div>
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="ocean-card border-l-4 border-l-sky-600 py-3">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">1. Dịch tần số cắt $-5.664\%$</div>
+                  <p class="text-sm text-sky-950 mt-1">$f_{c,\text{SC}} = \mathbf{187.675\text{ kHz}}$ thấp hơn $f_{c,\text{RC}} = 198.944\text{ kHz}$ do chia điện tích song song $C_1 \parallel C_2$ ($p_{\text{SC}} = 8/9 = 0.8889$).</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-blue-600 py-3">
+                  <div class="text-xs font-bold uppercase text-blue-700 mono">2. Độ suy hao dải chắn chuẩn xác</div>
+                  <p class="text-sm text-sky-950 mt-1">Dải thông $50\text{ kHz}$ chỉ suy hao $\mathbf{-0.298\text{ dB}}$, trong khi nhiễu $2\text{ MHz}$ bị nén $\mathbf{-20.02\text{ dB}}$ (giảm $10.03\times$ biên độ).</p>
+                </div>
+                <div class="gold-card border-l-4 border-l-amber-500 py-3">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">3. Đặc tính pha tại tần số Nyquist</div>
+                  <p class="text-sm text-sky-950 mt-1">Tại $f_{\text{clk}}/2 = 5\text{ MHz}$ ($z = -1$), biên độ dừng ở $-24.61\text{ dB}$ ($1/17$) và pha quay về $0^\circ$ đặc trưng hệ rời rạc.</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đáp ứng tần số đã khớp — vậy trong miền thời gian thực, Python mô phỏng sóng đầu ra bậc thang khi trộn tín hiệu $50\text{ kHz}$ với nhiễu $2\text{ MHz}$ ra sao?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 07 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s8" data-notes="Hàm plot_multitone_transient chạy 800 chu kỳ (80 us) để minh họa rõ từng bậc thang ZOH 100 ns dập tắt sóng nhiễu 2 MHz từ 120 mVp xuống 11.97 mVp.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Nhiệm vụ 2.1b: Mô Phỏng Quá Độ Miền Thời Gian</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Mô Phỏng Quá Độ Đa Tần: Giải Phương Trình Sai Phân &amp; Bậc Thang ZOH</h2>
+      </div>
+      <span class="badge-ocean">10.03× Interferer Rejection</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="ieee-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-700 mono">1. Hàm <span class="code-tag">sc_difference_filter()</span> &amp; Đầu vào 2 tần</div>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$V_{\text{in}}(t) = 0.9 + 0.30\sin(2\pi\cdot 50\text{k}\cdot t) + 0.12\sin(2\pi\cdot 2\text{M}\cdot t)$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1 list-disc pl-4">
+                    <li>Chuyển về tọa độ AC $x = V_{\text{in}}[n] - 0.9\text{ V}$, giải bằng <span class="code-tag">scipy.signal.lfilter([1/9], [1, -8/9], x)</span>.</li>
+                    <li><strong>50 kHz:</strong> giữ $289.9\text{ mV}_p$ ($96.6\%$); <strong>2 MHz:</strong> nén $120 \to \mathbf{11.97\text{ mV}_p}$.</li>
+                  </ul>
+                </div>
+                <div class="gold-card py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">2. Bài học quyết định cho Tuần 3 (Strobe Time)</div>
+                  <p class="text-xs text-sky-950 mt-1 leading-relaxed">
+                    Dạng sóng ra là bậc thang giữ mẫu bậc không (ZOH, $T_{\text{clk}} = 100\text{ ns}$). Do đó ở Tuần 3, ta phải trích mẫu Ngspice đúng tại <strong>cuối pha $\Phi_2$</strong> ($t_n = nT_{\text{clk}} + 98\text{ ns}$) sau khi OTA xác lập xong!
+                  </p>
+                </div>
+              </div>
+              <div class="col-span-7 fig-frame py-2">
+                <img src="figs/week2_multitone_transient.png" alt="Multi-tone Transient" class="max-h-[430px] w-auto object-contain" />
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Làm sao Python đo chính xác độ tinh khiết phổ ($	ext{SFDR, SNR, THD, ENOB}$) tới mức $-300\text{ dB}$ và mô phỏng trần nhiễu nhiệt $kT/C$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 08 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s9" data-notes="Giải thích chi tiết cách Python tính đúng công suất dBc bằng cửa sổ Hann + ENBW=1.5 và cách mô phỏng đúng cả 2 nguồn nhiễu nhiệt ở pha Phi1 và pha Phi2 để khớp chính xác định lý kT/C2.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Nhiệm vụ 2.1c: Thuật Toán Coherent FFT &amp; Nhiễu Nhiệt 2 Pha</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Cách Ứng Dụng Lý Thuyết Coherent Sampling &amp; Nhiệt Động $kT/C$ Vào Python</h2>
+      </div>
+      <span class="badge-gold">Zero Spectral Leakage</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-2 gap-5">
+              <div class="ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Phép đo phổ Coherent FFT (<span class="code-tag">coherent_spectral_metrics()</span>)</span>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$f_{\text{in}} = \frac{M_{\text{sig}}}{N_{\text{FFT}}}f_{\text{clk}} = \frac{83}{16384}\times 10\text{ MHz} = \mathbf{50.659\text{ kHz}}$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li><strong>Loại bỏ quá độ:</strong> Bỏ $2048$ chu kỳ đầu ($(8/9)^{2048} &lt; 10^{-100}$).</li>
+                    <li><strong>Nguyên tố cùng nhau:</strong> $\gcd(83, 16384) = 1$ để mọi mẫu nằm ở pha khác nhau trên chu kỳ sóng, không trùng bin hài.</li>
+                    <li><strong>Cửa sổ Hann chuẩn hóa:</strong> Chia cho <span class="code-tag">ENBW = 1.5</span> để tích phân chính xác công suất sóng hài $H_2..H_7$ (kể cả hài gập Nyquist).</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-sky-50 border border-sky-200 text-xs text-sky-900 mt-2">
+                  Sàn nhiễu số học 64-bit đạt $\text{SFDR} = 296.2\text{ dB}$, chứng minh thuật toán FFT <strong>sạch 0% rò phổ</strong>.
+                </div>
+              </div>
+
+              <div class="gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">2. Mô hình nhiễu nhiệt 2 pha (<span class="code-tag-gold">simulate_ktc_sc_filter()</span>)</span>
+                  <div class="bg-white border border-amber-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$v_{n1} \sim \mathcal{N}\!\left(0, \frac{k_B T}{C_1}\right), \quad v_{\Phi_2} \sim \alpha\,\mathcal{N}\!\left(0, \frac{k_B T}{C_1 \parallel C_2}\right)$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Pha $\Phi_1$: khóa `TG1` lấy mẫu nhiễu phương sai $k_BT/C_1$ lên $C_1$.</li>
+                    <li>Pha $\Phi_2$: khóa `TG2` đóng thêm nhiễu vòng $C_1 \parallel C_2$ ($C_{\text{eq}} = \frac{C_1 C_2}{C_1+C_2}$).</li>
+                    <li>Chứng minh giải tích đẳng phân năng lượng: $\text{Var}(V_{\text{out}}[\infty]) \equiv \frac{k_B T}{C_2}$!</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-white border border-amber-300 text-xs text-amber-950 mt-2">
+                  Cả hai pha cộng lại cho đúng phương sai $\frac{k_BT}{C_2} \implies \sigma = 71.95\ \mu\text{V}_{\text{rms}}$ ở $300\text{ K}$.
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Kết quả chạy phổ Coherent FFT của Golden Model (có và không có nhiễu $kT/C$) cho các con số trần vật lý nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 09 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s10" data-notes="Phổ Coherent FFT khẳng định trần vật lý kT/C của tụ C2=800 fF là SNR = 72.09 dB (ENOB = 11.66 bits), làm mốc tham chiếu cho mọi mô phỏng SPICE sau này.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II — Nhiệm vụ 2.1c: Kết Quả Phổ Chuẩn Golden FFT</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Phổ Coherent FFT ($N = 16384$, Hann) &amp; Mốc Chuẩn <span class="code-tag">metrics_golden.json</span></h2>
+      </div>
+      <span class="badge-ocean">metrics_golden.json</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-7 fig-frame py-2">
+                <img src="figs/week2_coherent_fft.png" alt="Coherent FFT Spectrum" class="max-h-[420px] w-auto object-contain" />
+              </div>
+              <div class="col-span-5 flex flex-col justify-between gap-3">
+                <div class="ocean-card py-2.5">
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">Thiết lập lấy mẫu đồng bộ (Zero Leakage)</span>
+                  <div class="bg-white border border-sky-200 rounded p-2 my-1.5 text-center text-xs">
+                    $$f_0 = \frac{83}{16384}\times 10\text{ MHz} = \mathbf{50.659\text{ kHz}},\quad V_{\text{in,p}} = 0.40\text{ V}$$
+                  </div>
+                  <p class="text-xs text-sky-900">Biên độ đỉnh ra: $V_{\text{out,rms}} = 273.06\text{ mV}$ ($\text{SNR}_{\text{lý thuyết}} = 71.58\text{ dB}$).</p>
+                </div>
+
+                <div class="ieee-card p-0 overflow-hidden">
+                  <table class="ieee-table text-xs">
+                    <thead>
+                      <tr><th class="p-2.5 text-left">Chỉ số Phổ</th><th class="p-2.5 text-right">Float64 Lý tưởng</th><th class="p-2.5 text-right">Kèm nhiễu $kT/C$</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-sky-100">
+                      <tr><td class="p-2 font-semibold">SNR (dB)</td><td class="p-2 text-right mono">288.69</td><td class="p-2 text-right font-bold text-sky-700 mono">72.09</td></tr>
+                      <tr><td class="p-2 font-semibold">SNDR (dB)</td><td class="p-2 text-right mono">288.68</td><td class="p-2 text-right font-bold text-sky-700 mono">71.95</td></tr>
+                      <tr><td class="p-2 font-semibold">SFDR (dB)</td><td class="p-2 text-right mono">296.20</td><td class="p-2 text-right font-bold text-blue-700 mono">90.44</td></tr>
+                      <tr><td class="p-2 font-semibold">THD (dB)</td><td class="p-2 text-right mono">−316.22</td><td class="p-2 text-right mono">−86.87</td></tr>
+                      <tr class="row-gold"><td class="p-2 font-bold">ENOB (bits)</td><td class="p-2 text-right mono">47.66</td><td class="p-2 text-right font-extrabold text-amber-900 mono">11.66</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Lõi $H(z)$ lý tưởng đã đạt $11.66\text{ bits}$ — nhưng khi dùng transistor thật có $R_{\text{on}}(V)$ biến thiên phi tuyến, chuyện gì xảy ra với méo hài THD?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 10 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s11" data-notes="Hàm simulate_nonlinear_ron_thd chia mỗi pha 47 ns thành 24 bước tích phân nhỏ để bắt chính xác méo hài bậc 3 sinh ra từ đường cong Ron(V) hình chuông, chứng minh lý do ép Ron &lt; 5 kOhm.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Nhiệm vụ 2.2a: Ngân Sách Phi Lý Tưởng (<span class="code-tag">nonideal_budget.py</span>)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Mô Phỏng Nội Trở Phi Tuyến $R_{\text{on}}(V)$: Lý Giải Ngưỡng $R_{\text{on}} &lt; 5\text{ k}\Omega$</h2>
+      </div>
+      <span class="badge-gold">Dynamic Track-and-Hold THD</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-2 gap-5">
+              <div class="gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">1. Hai mức tính toán hoàn toàn khác nhau</span>
+                  <ul class="mt-2.5 space-y-2 text-sm text-sky-950 list-disc pl-4">
+                    <li><strong>Bài toán Nạp Tĩnh ($\epsilon_{\text{set}} &lt; 0.1\%$):</strong> Trong $t_{\text{on}} = 47\text{ ns}$, giải $e^{-47\text{ ns}/(R_{\text{on}}C_1)} &lt; 10^{-3}$ chỉ cần <strong>$R_{\text{on}} &lt; 68.04\text{ k}\Omega$</strong>.</li>
+                    <li><strong>Bài toán Bám Mẫu Động ($V_{\text{in}}(t)$ biến thiên):</strong> Khóa `TG1` có đường cong chuông Body Effect đo từ Sky130A:
+                      $$R_{\text{on}}(V) = \frac{R_{\text{peak}}}{1 + 4.8\left(\frac{V - 0.965}{0.40}\right)^2}$$
+                    </li>
+                    <li>Độ trễ bám mẫu $\Delta V_{\text{track}} \approx -R_{\text{on}}(V_{\text{in}}) C_1 \frac{dV_{\text{in}}}{dt}$ làm biến dạng sóng hình sin thành <strong>hài bậc 3 ($	ext{HD}_3$)</strong>!</li>
+                  </ul>
+                </div>
+                <div class="bg-white border border-amber-300 rounded-lg p-2 text-xs font-bold text-amber-900 mt-2">
+                  Tại sao phải quét Python? Vì phương trình tích phân theo $t$ liên tục không có nghiệm đóng giải tích!
+                </div>
+              </div>
+
+              <div class="ocean-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">2. Cách Python mô phỏng 24 bước con mỗi pha</span>
+                  <div class="bg-white border border-sky-200 rounded-lg p-2 my-2 text-xs text-sky-950 mono">
+                    for k in range(24): # dt = 47 ns / 24 = 1.96 ns<br/>
+                    &nbsp;&nbsp;tau1 = r_tg(0.5*(v_src + v_c1)) * C1<br/>
+                    &nbsp;&nbsp;v_c1 = v_src + (v_c1 - v_src)*exp(-dt/tau1)
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Kiểm tra tại sát biên dải thông $f_{\text{in}} = \frac{73}{4096}f_{\text{clk}} = \mathbf{178.22\text{ kHz}}$, $A_{\text{in}} = 0.40\text{ V}$.</li>
+                    <li>Tại $R_{\text{peak}} = 60\text{ k}\Omega$: $\text{THD}$ xấu tới $-61.6\text{ dB}$.</li>
+                    <li>Tại ngưỡng chốt <strong>$R_{\text{peak}} = 5.0\text{ k}\Omega$</strong> ($94\tau$): $\text{THD} = \mathbf{-105.1\text{ dB}}$!</li>
+                    <li>Tại cấu hình `TG 4/12 µm` ($2.26\text{ k}\Omega$): $\text{THD} = \mathbf{-148.9\text{ dB}}$ (vô hiệu hóa hoàn toàn méo bám mẫu).</li>
+                  </ul>
+                </div>
+                <div class="bg-white border border-sky-300 rounded-lg p-2 text-xs font-bold text-sky-800 text-center mt-2">
+                  Khóa cứng chuẩn Gate: $R_{\text{on,max}} &lt; 5.0\text{ k}\Omega$
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bên cạnh $R_{\text{on}}$, hai khiếm khuyết còn lại là <strong>độ lợi hữu hạn $A_{OL}$ của OTA</strong> và <strong>tiêm điện tích khóa TG</strong> được Python tính như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 11 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s12" data-notes="sweep_aol chứng minh AOL &gt;= 40 dB giữ sai số dưới 1%; sweep_charge_injection vẽ đường đánh đổi giữa Ron (tỷ lệ nghịch W) và điện áp tiêm điện tích dV_CI (tỷ lệ thuận W) để chốt điểm ngọt ban đầu Wn=4, Wp=12 um.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Nhiệm vụ 2.2b: Quét Độ Lợi $A_{OL}$ &amp; Đánh Đổi Diện Tích Khóa TG</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Mô Hình Hóa Độ Lợi Hữu Hạn $A_{OL}$ &amp; Tìm Điểm Ngọt Kích Thước Khóa TG</h2>
+      </div>
+      <span class="badge-ocean">sweep_aol() &amp; sweep_ci()</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-2 gap-5">
+              <div class="ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Hàm <span class="code-tag">sweep_aol()</span>: Sai số biên độ &amp; Dịch cực</span>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$\epsilon_A = 1 - \frac{A_{OL}}{1+A_{OL}}, \quad C_{\text{in,eff}} = C_{gd1} + \frac{C_{gs1}}{1 + A_{OL}}$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Quét $A_{OL} \in [10\text{ dB}, 70\text{ dB}]$ đánh giá cả sai số đệm DC và độ dịch điểm cực SC.</li>
+                    <li>Tại $A_{OL} = 35\text{ dB}$ ($56.2\text{ V/V}$): $\epsilon_A = 1.75\%$, dịch cực $1.65\%$.</li>
+                    <li>Tại ngưỡng chốt <strong>$A_{OL} \ge 40\text{ dB}$</strong> ($100\text{ V/V}$): sai số biên độ hạ còn <strong>$0.99\%$ ($0.086\text{ dB}$)</strong> và dịch cực chỉ <strong>$0.94\% \ll 5\%$</strong>.</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-sky-50 border border-sky-200 text-xs font-bold text-sky-900 mt-2">
+                  Khóa cứng chuẩn Gate 5T-OTA: $A_{OL} \ge 40\text{ dB}$
+                </div>
+              </div>
+
+              <div class="gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">2. Hàm <span class="code-tag-gold">sweep_charge_injection()</span>: Đánh đổi $W_n$</span>
+                  <div class="bg-white border border-amber-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$R_{\text{on}} \propto \frac{1}{W_n}, \qquad \Delta V_{\text{CI}} = \frac{\max(Q_n, Q_p)}{2(C_1+C_2)} \propto W_n \cdot L$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Quét $W_n \in [0.8, 16.0]\ \mu\text{m}$ (giữ tỷ lệ bù $W_p = 3 W_n$, $L = 0.15\ \mu\text{m}$) dùng hằng số BSIM4 thực đo ($C_{ox,n}=8.325, C_{ox,p}=8.163\text{ fF}/\mu\text{m}^2$).</li>
+                    <li><strong>Điểm ngọt ($W_n/W_p = 4/12\ \mu\text{m}$, diện tích $2.4\ \mu\text{m}^2$):</strong> $R_{\text{peak}} = 2.26\text{ k}\Omega &lt; 5\text{ k}\Omega$, $\Delta V_{\text{CI}}(V_{\text{out}}) = 3.84\text{ mV}$ (chỉ còn $\mathbf{0.77\text{ mV}}$ khi bù Dummy $W/2$).</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-white border border-amber-300 text-xs font-bold text-amber-900 mt-2">
+                  Ghi chú sang Tuần 3: Sẽ tinh chỉnh xuống $2/6\ \mu\text{m}$ khi thấy ký sinh $C_{db}$ trên $C_1$!
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đặt cả 3 phép quét phi lý tưởng từ <span class="code-tag">nonideal_budget.py</span> lên biểu đồ thì bức tranh tổng thể trông như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 12 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s13" data-notes="3 biểu đồ trích từ nonideal_budget.py: Panel (a) chứng minh Ron &lt; 5 kOhm đạt THD &lt; -105 dB; Panel (b) chứng minh AOL &gt;= 40 dB giữ sai số &lt; 1%; Panel (c) chốt điểm ngọt Wn=4, Wp=12 um.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III — Nhiệm vụ 2.2: Biểu Đồ Tổng Hợp Ngân Sách Phi Lý Tưởng</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Quét Phi Lý Tưởng: Nội Trở $R_{\text{on}}$, Độ Lợi $A_{OL}$ &amp; Charge Injection</h2>
+      </div>
+      <span class="badge-ocean">week2_nonideal_budgets.png</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="fig-frame py-2 px-3">
+              <img src="figs/week2_nonideal_budgets.png" alt="Non-ideal Error Budgets" class="max-h-[340px] w-full object-contain" />
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-xs">
+              <div class="ocean-card py-2.5">
+                <strong class="text-sky-800">(a) Ngưỡng $R_{\text{on}} &lt; 5\text{ k}\Omega$:</strong>
+                <p class="mt-1 text-sky-950">Xác lập tĩnh $&lt;0.1\%$ chỉ cần $68\text{ k}\Omega$, nhưng chốt $&lt;5\text{ k}\Omega$ để giữ méo hài bám mẫu động $\text{THD} &lt; -105\text{ dB}$.</p>
+              </div>
+              <div class="ieee-card border-sky-400 py-2.5">
+                <strong class="text-blue-800">(b) Ngưỡng $A_{OL} \ge 40\text{ dB}$ ($100\text{ V/V}$):</strong>
+                <p class="mt-1 text-sky-950">Giữ sụt độ lợi DC $\epsilon_A = 0.99\%$ ($0.086\text{ dB}$) và độ lệch tần số cắt $|\Delta f_c / f_c| = 0.94\% \ll 5\%$.</p>
+              </div>
+              <div class="gold-card py-2.5">
+                <strong class="text-amber-900">(c) Điểm ngọt `TG` $W_n/W_p = 4/12\ \mu\text{m}$:</strong>
+                <p class="mt-1 text-sky-950">Đạt $R_{\text{on,peak}} = 2.26\text{ k}\Omega$ với $\Delta V_{\text{CI}}(V_{\text{out}}) = 3.84\text{ mV}$ (còn $\mathbf{0.77\text{ mV}}$ khi bù Dummy $W/2$).</p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đã khóa cứng mọi chỉ tiêu cho từng khối ($R_{\text{on}}&lt;5\text{ k}\Omega, A_{OL}\ge 40\text{ dB}, \text{GBW}&gt;10\text{ MHz}, \text{PM}\ge 60^\circ$) — vậy làm sao tính ra kích thước $W/L$ cụ thể của 5T-OTA trên Sky130A?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 13 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s14" data-notes="Phương pháp gm/Id = 20.5 V^-1 đưa M1, M2 vào vùng nghịch đảo trung bình, hạ VGS1 xuống 0.662 V để giữ Vtail = 237.5 mV dư bão hòa cho M5, đồng thời dùng L=0.8 um để nâng AOL lên 41.62 dB.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Nhiệm vụ 2.3a: Chiến Lược Sizing 5T-OTA (<span class="code-tag">sizing_calc.py</span>)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Phương Pháp $g_m/I_D$ Giải Bài Toán Quỹ Áp 5T-OTA Trên Sky130A</h2>
+      </div>
+      <span class="badge-gold">Moderate Inversion Design</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-2 gap-5">
+              <div class="gold-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">Thách thức Vật lý của PDK Sky130A</span>
+                  <h3 class="font-extrabold text-sky-950 text-base mt-1">Tại sao Định luật Bình phương Cổ điển thất bại?</h3>
+                  <div class="bg-white border border-amber-300 rounded-lg p-2.5 my-2.5 text-center text-sm">
+                    $$V_{\text{tail}} = V_{\text{in,cm}} - V_{GS1} &gt; V_{dsat5}$$
+                  </div>
+                  <ul class="text-sm text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>`nfet_01v8` có $V_{TH,n} \approx 0.63\text{–}0.68\text{ V}$. Nếu chọn vùng nghịch đảo mạnh ($V_{ov1} \approx 0.20\text{ V} \implies V_{GS1} \approx 0.85\text{ V}$), thì $V_{\text{tail}} \approx 0.05\text{ V}$ làm `M5` <strong>rơi ngay khỏi bão hòa</strong> tại $V_{CM}=0.9\text{ V}$!</li>
+                    <li>Nếu dùng kênh ngắn $L = 0.15\ \mu\text{m}$, $r_o$ quá nhỏ không thể đạt $A_{OL} &gt; 40\text{ dB}$.</li>
+                  </ul>
+                </div>
+                <div class="text-xs text-amber-900 font-bold mono mt-2">Phát hiện nhờ đo thực nghiệm BSIM4 từ Tuần 1</div>
+              </div>
+
+              <div class="ocean-card border-l-4 border-l-sky-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">Giải pháp Sizing Chuẩn Xác bằng $g_m/I_D$</span>
+                  <h3 class="font-extrabold text-sky-950 text-base mt-1">Nghịch Đảo Trung Bình ($g_m/I_D = 20.5\ \text{V}^{-1}$) + $L = 0.8\ \mu\text{m}$</h3>
+                  <div class="bg-white border border-sky-300 rounded-lg p-2.5 my-2.5 text-center text-sm">
+                    $$I_{\text{tail}} = 28.2\ \mu\text{A} \implies g_{m1} = \mathbf{289.5\ \mu\text{S}},\quad r_{o2}\parallel r_{o4} = \mathbf{361\text{ k}\Omega}$$
+                  </div>
+                  <ul class="text-sm text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li><strong>`M1, M2` ($32 / 0.8\ \mu\text{m}$, `nf=8`):</strong> Hạ $V_{GS1} = 0.662\text{ V} \implies V_{\text{tail}} = \mathbf{237.5\text{ mV}}$.</li>
+                    <li><strong>`M5, M6` ($24 / 1.0\ \mu\text{m}$, `nf=6`):</strong> Giữ $V_{dsat5} = 100.8\text{ mV}$ (dư bão hòa $+136.8\text{ mV}$).</li>
+                    <li><strong>Đồng nhất ngón:</strong> Cả `M1–M6` dùng $W_{\text{finger}} = 4.0\ \mu\text{m}$ cho Layout ABBA Tuần 4.</li>
+                  </ul>
+                </div>
+                <div class="text-xs text-sky-800 font-bold mono mt-2">Công suất tĩnh toàn OTA + Bias: chỉ 104.7 µW • SR = 28.2 V/µs</div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Thế còn 3 khối còn lại (`non_overlap_clk`, `tg_switch`, `sc_core`) được tính kích thước $W/L$ và kích thước hình học MIM như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 14 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s15" data-notes="Giải thích rõ cơ sở chọn kích thước từng khối: L=0.95 um cho chuỗi trễ tạo t_nov = 2.92 ns; L=0.15 um &amp; Wp/Wn=3 cho khóa TG; và bù dw=0.15 um cho tụ MIM 4.85x9.85 um khớp bước lưới Magic.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Nhiệm vụ 2.3b: Tính Toán Kích Thước 3 Khối Còn Lại</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Cách Chốt Kích Thước Xung Không Chồng Lấn, Khóa TG &amp; Ô Tụ MIM Đơn Vị</h2>
+      </div>
+      <span class="badge-ocean">Analytical + Grid-Clean Sizing</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-3 gap-4">
+              <div class="ieee-card border-t-4 border-t-sky-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">Khối 1 • <span class="code-tag">non_overlap_clk</span></span>
+                  <h3 class="font-extrabold text-sky-950 text-base mt-1">Chuỗi Trễ Kênh Dài $L=0.95\ \mu\text{m}$</h3>
+                  <ul class="mt-2.5 space-y-1.5 text-xs text-sky-950 list-disc pl-4">
+                    <li><strong>Chốt `NAND2`:</strong> $W_n=1.6, W_p=2.0\ \mu\text{m}$ (2 NMOS nối tiếp tăng $W_n$ để cân bằng sườn kéo xuống).</li>
+                    <li><strong>6 cổng đảo trễ `XDEL1..6`:</strong> Số tầng chẵn giữ nguyên cực tính, tăng chiều dài kênh $L = 0.95\ \mu\text{m}$ giảm dòng nạp tạo đúng <strong>$t_{\text{nov}} = 2.92\text{ ns}$</strong> rất gọn diện tích.</li>
+                    <li><strong>Đệm xuất `XBUF`:</strong> $W_n/W_p = 2/6\ \mu\text{m}$ (`nf=2`) cho sườn dốc $&lt; 200\text{ ps}$.</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-sky-50 border border-sky-200 text-xs font-bold text-sky-900 text-center mt-2">
+                  Chính giữa dải $[2.0, 5.0]\text{ ns}$
+                </div>
+              </div>
+
+              <div class="gold-card border-t-4 border-t-amber-500 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">Khối 2 • <span class="code-tag-gold">tg_switch</span></span>
+                  <h3 class="font-extrabold text-sky-950 text-base mt-1">Bù Độ Linh Động $W_p / W_n = 3$</h3>
+                  <ul class="mt-2.5 space-y-1.5 text-xs text-sky-950 list-disc pl-4">
+                    <li>Dùng chiều dài kênh ngắn nhất $L_{\min} = 0.15\ \mu\text{m}$ để giảm điện tích kênh $Q_{\text{ch}} \propto L$ và giảm $R_{\text{on}}$.</li>
+                    <li>Bề rộng PMOS gấp $3\times$ NMOS ($4/12\ \mu\text{m}$ ở Tuần 2) để cân bằng $\mu_n/\mu_p \approx 2.7$ và ngưỡng $|V_{TH,p}|$ cao.</li>
+                    <li><strong>Dự phòng:</strong> Kèm cặp khóa giả `XDUM1,2` ($W/2$, nối tắt D–S) để kiểm chứng triệt gai.</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-white border border-amber-300 text-xs font-bold text-amber-900 text-center mt-2">
+                  $R_{\text{on,max}} = 2.26\text{ k}\Omega &lt; 5\text{ k}\Omega$
+                </div>
+              </div>
+
+              <div class="ocean-card border-t-4 border-t-blue-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-blue-700 mono">Khối 3 • <span class="code-tag">sc_core</span> MIM</span>
+                  <h3 class="font-extrabold text-sky-950 text-base mt-1">Bù Độ Xói Biên $dw = 0.15\ \mu\text{m}$</h3>
+                  <div class="bg-white border border-sky-200 rounded p-1.5 my-2 text-center text-xs">
+                    $$C_A(W+0.15)(L+0.15) = 100.00\text{ fF}$$
+                  </div>
+                  <ul class="space-y-1.5 text-xs text-sky-950 list-disc pl-4">
+                    <li>Chọn $W_{\text{eff}}=5.00\ \mu\text{m}, L_{\text{eff}}=10.00\ \mu\text{m} \implies$ kích thước vẽ <strong>$4.85 \times 9.85\ \mu\text{m}$</strong>.</li>
+                    <li>Chẵn bước lưới Magic $0.05\ \mu\text{m}$ ($5\text{ nm}$ grid clean).</li>
+                    <li>$C_1$: `mult=1` ($100\text{ fF}$); $C_2$: `mult=8` ($800\text{ fF}$).</li>
+                  </ul>
+                </div>
+                <div class="p-2 rounded bg-white border border-sky-300 text-xs font-bold text-blue-800 text-center mt-2">
+                  Bảo toàn tuyệt đối $\alpha = 1/9$
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Làm sao biết chắc bảng kích thước $W/L$ vừa tính ở trên chạy đúng với mô hình bán dẫn BSIM4 thật trước khi mở Xschem Tuần 3?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 15 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s16" data-notes="sizing_calc.py tự động sinh netlist SPICE và gọi ngspice -b để tiền kiểm chứng ngay lập tức: 5T-OTA đạt AOL = 41.62 dB, GBW = 43.91 MHz, PM = 81.27 độ; Clock đạt t_nov = 2.92 ns.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Nhiệm vụ 2.3c: Tiền Kiểm Chứng BSIM4 Tự Động Trong Python</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tiền Kiểm Chứng Ngspice BSIM4: Đáp Ứng 5T-OTA &amp; Xung Không Chồng Lấn</h2>
+      </div>
+      <span class="badge-ocean">week2_ota_bode_and_clk.png</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="fig-frame py-2 px-3">
+              <img src="figs/week2_ota_bode_and_clk.png" alt="OTA Bode and Clock Verification" class="max-h-[330px] w-full object-contain" />
+            </div>
+            <div class="grid grid-cols-4 gap-3 text-xs">
+              <div class="ocean-card py-2">
+                <div class="text-sky-800 font-semibold">Độ lợi vòng hở $A_{OL}$</div>
+                <div class="text-lg font-extrabold text-sky-700 mono">41.62 dB</div>
+                <div class="text-sky-900 font-bold">✓ PASS (&gt; 40 dB)</div>
+              </div>
+              <div class="ocean-card py-2">
+                <div class="text-sky-800 font-semibold">Băng thông $\text{GBW}$ ($1\text{ pF}$)</div>
+                <div class="text-lg font-extrabold text-sky-700 mono">43.91 MHz</div>
+                <div class="text-sky-900 font-bold">✓ PASS (&gt; 10 MHz)</div>
+              </div>
+              <div class="gold-card py-2">
+                <div class="text-amber-900 font-semibold">Biên dự trữ pha $\text{PM}$</div>
+                <div class="text-lg font-extrabold text-amber-800 mono">81.27°</div>
+                <div class="text-amber-900 font-bold">✓ PASS (≥ 60°)</div>
+              </div>
+              <div class="gold-card py-2">
+                <div class="text-amber-900 font-semibold">Khoảng chết $t_{\text{nov}}$</div>
+                <div class="text-lg font-extrabold text-amber-800 mono">2.92 ns</div>
+                <div class="text-amber-900 font-bold">✓ PASS (∈ [2, 5] ns)</div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Kết quả BSIM4 đã vượt xa mọi ngưỡng Gate — hãy tổng hợp toàn bộ bảng kích thước linh kiện Khối 1–3 để sẵn sàng nhập vào Xschem.</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 16 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s17" data-notes="Bảng kích thước Block 1-3 tính theo micromet trần (scale=1u), ghi nhận cả giá trị khởi đầu Tuần 2 và bước tinh chỉnh xuống 2/6 um khi gặp ký sinh tụ nhỏ C1=100 fF ở Tuần 3.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Bảng Kích Thước Linh Kiện Chuẩn (Khối 1, 2, 3)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Sizing $W/L$ Khối Xung Nhịp, Khóa TG &amp; Lõi Tụ MIM</h2>
+      </div>
+      <span class="badge-ocean">0.05 µm Magic Grid Clean</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-xs">
+                <thead>
+                  <tr class="uppercase tracking-wider">
+                    <th class="py-2.5 px-3.5 text-left">Khối chức năng</th>
+                    <th class="py-2.5 px-3.5 text-left">Phần tử</th>
+                    <th class="py-2.5 px-3.5 text-left">Linh kiện Sky130A</th>
+                    <th class="py-2.5 px-3.5 text-center">$W$ ($\mu\text{m}$)</th>
+                    <th class="py-2.5 px-3.5 text-center">$L$ ($\mu\text{m}$)</th>
+                    <th class="py-2.5 px-3.5 text-center">nf / mult</th>
+                    <th class="py-2.5 px-3.5 text-left">Vai trò Thiết kế</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950">
+                  <tr><td class="py-2 px-3.5 font-bold text-sky-800" rowspan="4">1. non_overlap_clk</td><td class="py-2 px-3.5 mono">XINV_IN</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-semibold">1.0 / 2.5</td><td class="py-2 px-3.5 text-center">0.15</td><td class="py-2 px-3.5 text-center">1 / 1</td><td class="py-2 px-3.5">Đảo pha &amp; làm sắc xung $10\text{ MHz}$</td></tr>
+                  <tr><td class="py-2 px-3.5 mono">XNAND_A, B</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-semibold">1.6 / 2.0</td><td class="py-2 px-3.5 text-center">0.15</td><td class="py-2 px-3.5 text-center">1 / 1</td><td class="py-2 px-3.5">Chốt chéo NAND2 cân bằng sườn</td></tr>
+                  <tr><td class="py-2 px-3.5 mono">XDEL1..6 (×2)</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-semibold">0.6 / 1.5</td><td class="py-2 px-3.5 text-center font-bold text-blue-700">0.95</td><td class="py-2 px-3.5 text-center">1 / 1</td><td class="py-2 px-3.5">6 cổng NOT trễ tạo $t_{\text{nov}} = 2.92\text{ ns}$</td></tr>
+                  <tr><td class="py-2 px-3.5 mono">XBUF1, 2</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-semibold">2.0 / 6.0</td><td class="py-2 px-3.5 text-center">0.15</td><td class="py-2 px-3.5 text-center">2 / 1</td><td class="py-2 px-3.5">Đệm xuất $\Phi_1, \overline{\Phi_1}, \Phi_2, \overline{\Phi_2}$</td></tr>
+                  <tr class="row-gold"><td class="py-2 px-3.5 font-bold text-amber-900" rowspan="2">2. tg_switch</td><td class="py-2 px-3.5 mono">XTG1, XTG2</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-bold text-amber-900">4.0 / 12.0 → 2.0 / 6.0*</td><td class="py-2 px-3.5 text-center">0.15</td><td class="py-2 px-3.5 text-center">2,4 → 1,2</td><td class="py-2 px-3.5">Tuần 2: $2.26\text{ k}\Omega$; Tuần 3 tinh chỉnh giảm $C_{\text{par}}$</td></tr>
+                  <tr class="row-gold"><td class="py-2 px-3.5 mono">XDUM2</td><td class="py-2 px-3.5 mono">nfet / pfet_01v8</td><td class="py-2 px-3.5 text-center font-semibold">1.0 / 3.0</td><td class="py-2 px-3.5 text-center">0.15</td><td class="py-2 px-3.5 text-center">1 / 1</td><td class="py-2 px-3.5">Khóa giả $W/2$ đặt tại `VX` triệt tiêm điện tích</td></tr>
+                  <tr><td class="py-2 px-3.5 font-bold text-sky-900">3. sc_core</td><td class="py-2 px-3.5 mono">XC1 / XC2</td><td class="py-2 px-3.5 mono">cap_mim_m3_1</td><td class="py-2 px-3.5 text-center font-bold">4.85</td><td class="py-2 px-3.5 text-center font-bold">9.85</td><td class="py-2 px-3.5 text-center font-bold text-sky-700">mult = 1 / 8</td><td class="py-2 px-3.5">$100.00\text{ fF}$ &amp; $800.00\text{ fF}$ ($1:8$)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="gold-card py-2 px-4 text-xs font-medium text-sky-950">
+              <strong>*Lưu ý chuyển tiếp Tuần 2 $	o$ Tuần 3:</strong> Baseline Tuần 2 xuất `TG 4/12 µm`, sau khi đưa vào mô phỏng BSIM4 toàn mạch có ký sinh `AD/AS` ở Tuần 3 sẽ tinh chỉnh gọn về `2.0/6.0 µm` để $C_1$ không bị phình ký sinh!
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Vậy bảng kích thước chi tiết và biên độ dự trữ bão hòa của cả 5–6 transistor trong khối 4 (`ota_5t`) như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 17 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s18" data-notes="Cả 5 transistor M1-M5 của 5T-OTA đều bão hòa sâu (+136.8 mV trở lên) và đồng nhất W_finger = 4.0 um chuẩn bị sẵn cho bố cục Common-Centroid ABBA ở Tuần 4.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Bảng Kích Thước Linh Kiện Chuẩn (Khối 4: 5T-OTA)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Sizing <span class="code-tag">ota_5t</span> &amp; Kiểm Chứng Biên Bão Hòa <span class="code-tag">M1–M5</span></h2>
+      </div>
+      <span class="badge-ocean">All 5 MOSFETs Saturated</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-7 ieee-card p-0 overflow-hidden">
+                <table class="ieee-table text-xs">
+                  <thead>
+                    <tr class="uppercase">
+                      <th class="p-3 text-left">Transistor</th>
+                      <th class="p-3 text-left">Model</th>
+                      <th class="p-3 text-center">$W / L$ ($\mu\text{m}$)</th>
+                      <th class="p-3 text-center">nf</th>
+                      <th class="p-3 text-right">$|V_{DS}| - V_{dsat}$</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-sky-100 text-sky-950">
+                    <tr><td class="p-3 font-bold text-sky-700 mono">XM1 (In+)</td><td class="p-3 mono">nfet_01v8</td><td class="p-3 text-center font-bold">32.0 / 0.80</td><td class="p-3 text-center">8</td><td class="p-3 text-right font-bold text-sky-700 mono">+379.5 mV</td></tr>
+                    <tr><td class="p-3 font-bold text-sky-700 mono">XM2 (In−)</td><td class="p-3 mono">nfet_01v8</td><td class="p-3 text-center font-bold">32.0 / 0.80</td><td class="p-3 text-center">8</td><td class="p-3 text-right font-bold text-sky-700 mono">+593.0 mV</td></tr>
+                    <tr><td class="p-3 font-bold text-amber-700 mono">XM3 (Diode)</td><td class="p-3 mono">pfet_01v8</td><td class="p-3 text-center font-bold">16.0 / 0.80</td><td class="p-3 text-center">4</td><td class="p-3 text-right font-bold text-sky-700 mono">+970.7 mV</td></tr>
+                    <tr><td class="p-3 font-bold text-amber-700 mono">XM4 (Mirror)</td><td class="p-3 mono">pfet_01v8</td><td class="p-3 text-center font-bold">16.0 / 0.80</td><td class="p-3 text-center">4</td><td class="p-3 text-right font-bold text-sky-700 mono">+758.0 mV</td></tr>
+                    <tr class="row-gold"><td class="p-3 font-bold text-amber-900 mono">XM5, XM6</td><td class="p-3 mono">nfet_01v8</td><td class="p-3 text-center font-bold">24.0 / 1.00</td><td class="p-3 text-center">6</td><td class="p-3 text-right font-bold text-amber-900 mono">+136.8 mV</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="col-span-5 flex flex-col justify-between gap-3">
+                <div class="ocean-card py-3">
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">Điểm Tĩnh DC Tại $V_{CM} = 0.900\text{ V}$</span>
+                  <ul class="text-sm text-sky-950 space-y-1.5 list-disc pl-4 mt-2">
+                    <li>Điện áp ngõ ra tĩnh: $V_{\text{out}} = \mathbf{0.8982\text{ V}}$.</li>
+                    <li>Sai số DC Offset hệ thống: $\mathbf{-1.85\text{ mV}}$.</li>
+                    <li>Điện áp nút đuôi: $V_{\text{tail}} = \mathbf{0.2375\text{ V}}$.</li>
+                    <li>Tốc độ quét ước tính: $\text{SR} = \mathbf{28.16\text{ V}/\mu\text{s}}$.</li>
+                  </ul>
+                </div>
+                <div class="gold-card py-3">
+                  <span class="text-xs font-bold uppercase text-amber-900 mono">Tối Ưu Sẵn Cho Layout ABBA Tuần 4</span>
+                  <p class="text-xs text-sky-950 mt-1.5 leading-relaxed">
+                    Cả 6 transistor `XM1–XM6` đều có bề rộng ngón đơn vị <strong>$W_{\text{finger}} = 4.00\ \mu\text{m}$</strong> chẵn, cho phép xếp chồng đối xứng tâm <strong>ABBA</strong> (`M1-M2-M2-M1`) không lệch bước cổng Poly.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi đã có trọn bộ `metrics_golden.json` và `sizing_table.json`, quy trình bàn giao tự động sang Tuần 3 Xschem/Ngspice diễn ra như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 18 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s19" data-notes="Quy trình 4 bước khép kín bàn giao từ Tuần 2 sang Tuần 3: nhập sizing_table.json vào Xschem, chạy Gate từng khối, chạy Top Coherent .tran và chạy ngspice_vs_golden.py đối chiếu.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi V — Quy Trình Ghép Nối Dữ Liệu Sang Tuần 3</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Cầu Nối Tự Động Hóa: Golden Model Python $\leftrightarrow$ Ngspice Tuần 3</h2>
+      </div>
+      <span class="badge-ocean">Ready for Xschem</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-4 px-5">
+              
+    <svg viewBox="0 0 1080 205" class="w-full h-[190px]">
+      
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+      <rect x="16" y="34" width="230" height="134" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2" />
+      <text x="131" y="64" text-anchor="middle" font-size="13.5" font-weight="800" fill="#B45309">1. sizing_table.json</text>
+      <text x="131" y="90" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Nhập W, L, nf, mult</text>
+      <text x="131" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">vào Schematic Xschem</text>
+      <text x="131" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#D97706">NOT / NAND2 / TG / OTA</text>
+
+      <line x1="246" y1="101" x2="296" y2="101" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="302" y="34" width="230" height="134" rx="12" fill="#F0F9FF" stroke="#0284C7" stroke-width="2.2" />
+      <text x="417" y="64" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0369A1">2. Ngspice Unit Gates</text>
+      <text x="417" y="90" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Kiểm định độc lập từng khối:</text>
+      <text x="417" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">.tran (clk), .dc (TG),</text>
+      <text x="417" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#0284C7">.op + .ac + .tran (ota_5t)</text>
+
+      <line x1="532" y1="101" x2="582" y2="101" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="588" y="34" width="230" height="134" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2" />
+      <text x="703" y="64" text-anchor="middle" font-size="13.5" font-weight="800" fill="#B45309">3. Top Coherent .tran</text>
+      <text x="703" y="90" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Ghép top_sc_lpf_xschem.spice</text>
+      <text x="703" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Strobe cuối pha Φ₂ (98 ns)</text>
+      <text x="703" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#D97706">method=gear, maxstep ≤ 2 ns</text>
+
+      <line x1="818" y1="101" x2="868" y2="101" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+
+      <rect x="874" y="34" width="192" height="134" rx="12" fill="#E0F2FE" stroke="#0369A1" stroke-width="2.4" />
+      <text x="970" y="64" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0369A1">4. Overlay &amp; Gate 3</text>
+      <text x="970" y="90" text-anchor="middle" font-size="11.5" fill="#0C4A6E">ngspice_vs_golden.py</text>
+      <text x="970" y="112" text-anchor="middle" font-size="11.5" fill="#0C4A6E">So với metrics_golden.json</text>
+      <text x="970" y="140" text-anchor="middle" font-size="11" font-weight="800" fill="#0284C7">|Δf_c| &lt; 5% • SFDR &gt; 50 dB</text>
+    </svg>
+    
+              <div class="grid grid-cols-3 gap-4 mt-3 pt-3 border-t border-sky-200 text-xs text-sky-950">
+                <div class="p-2 rounded bg-sky-50 border border-sky-200"><strong>Dải $f_c$ cho phép ở Tuần 3 ($\pm 5\%$):</strong> $[178.29\text{ kHz},\ 197.06\text{ kHz}]$ quanh $187.675\text{ kHz}$.</div>
+                <div class="p-2 rounded bg-amber-50 border border-amber-200"><strong>Tần số Coherent Testbench:</strong> $f_{\text{in}} = \frac{M}{N}10\text{ MHz}$ khớp bin nguyên tố với Python FFT.</div>
+                <div class="p-2 rounded bg-sky-50 border border-sky-200"><strong>Dự phòng tối ưu:</strong> Kích hoạt khóa giả <span class="code-tag">XDUM</span> ($W/2$) tại nút trở kháng cao nếu gai $\Delta V_{\text{CI}}$ gây méo hài.</div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Trước khi chuyển sang vẽ Schematic trên Xschem, hãy chốt lại toàn bộ Cổng kiểm định Gate 2 của Tuần 2.</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 19 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s20" data-notes="Toàn bộ Verification Gate 2 đã PASS. Ta chuyển sang Tuần 3: hiện thực hóa 4 khối lên Xschem và đối đầu với mô hình transistor BSIM4 thật.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi V — Verification Gate 2 Sign-Off</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tổng Kết Cổng Kiểm Định Tuần 2 &amp; Bàn Giao Sang Tuần 3</h2>
+      </div>
+      <span class="badge-ocean">GATE 2: 100% PASSED</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-sm">
+                <thead>
+                  <tr class="text-xs uppercase tracking-wider">
+                    <th class="py-2.5 px-4 text-left">Deliverable / Tiêu chuẩn Gate 2</th>
+                    <th class="py-2.5 px-4 text-left">File Xuất Thực Tế</th>
+                    <th class="py-2.5 px-4 text-left">Chỉ Số Định Lượng Đã Chốt</th>
+                    <th class="py-2.5 px-4 text-center">Kết quả</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950 text-[13px]">
+                  <tr><td class="py-2 px-4 font-semibold">1. Golden Model &amp; Coherent FFT</td><td class="py-2 px-4 mono text-xs">python/metrics_golden.json</td><td class="py-2 px-4">$f_{c,\text{SC}} = 187.675\text{ kHz}$, $\text{SNR}_{kT/C} = 72.09\text{ dB}$, $\text{ENOB} = 11.66\text{ b}$</td><td class="py-2 px-4 text-center"><span class="badge-ocean">PASS</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">2. Ngân sách Phi lý tưởng</td><td class="py-2 px-4 mono text-xs">python/nonideal_budget.json</td><td class="py-2 px-4">$R_{\text{on}} &lt; 5\text{ k}\Omega$ ($\text{THD} = -105\text{ dB}$), $A_{OL} \ge 40\text{ dB}$ ($\epsilon_A &lt; 1\%$)</td><td class="py-2 px-4 text-center"><span class="badge-ocean">PASS</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">3. Bảng Sizing $W/L$ 4 Khối</td><td class="py-2 px-4 mono text-xs">python/sizing_table.json</td><td class="py-2 px-4">$A_{OL} = 41.62\text{ dB},\ \text{GBW} = 43.9\text{ MHz},\ \text{PM} = 81.3^\circ,\ t_{\text{nov}} = 2.92\text{ ns}$</td><td class="py-2 px-4 text-center"><span class="badge-ocean">PASS</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">4. Bộ Đồ Thị Hội Nghị 300 DPI</td><td class="py-2 px-4 mono text-xs">slides/figs/week2_*.png (5 bộ)</td><td class="py-2 px-4">Bode, Multi-tone ZOH, Coherent FFT, Budgets &amp; OTA/Clk</td><td class="py-2 px-4 text-center"><span class="badge-ocean">PASS</span></td></tr>
+                  <tr class="row-gold"><td class="py-2 px-4 font-semibold">5. Hồ sơ &amp; Slide Báo cáo Tuần 2</td><td class="py-2 px-4 mono text-xs">slides/week2_slides.html</td><td class="py-2 px-4">20 Slides dẫn dắt Socratic + Công thức Python + Speaker Notes</td><td class="py-2 px-4 text-center"><span class="badge-gold">READY</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="ocean-card py-2.5 px-5 flex items-center justify-between">
+              <div class="text-sm"><span class="text-sky-800 font-bold uppercase mono mr-2">Chuyển tiếp sang Tuần 3:</span>Vẽ 9 Schematic Xschem chuẩn IEEE &amp; chạy mô phỏng Ngspice Pre-Layout BSIM4.</div>
+              <span class="badge-gold mono">Lệnh: /tuan 3</span>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bước sang Tuần 3: Tuần 3 là gì, tại sao đã mô phỏng Python rồi vẫn cần vẽ Xschem và chạy Ngspice Pre-Layout BSIM4?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 2: Mô Hình Hóa Python (Golden Model), Ngân Sách Phi Lý Tưởng &amp; Sizing W/L • <span class="mono font-bold text-sky-900">Slide 20 / 20</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Speaker Notes Drawer (Press N) -->
+<div id="notes-panel">
+  <div class="flex items-center justify-between border-b border-sky-200 pb-1.5 mb-2">
+    <span class="text-xs font-bold uppercase tracking-wider text-sky-700 mono">Kịch bản Dẫn dắt Thuyết trình (Phím N)</span>
+    <button onclick="toggleNotes()" class="text-amber-700 hover:text-sky-800 text-xs font-bold mono">[Đóng]</button>
+  </div>
+  <div id="notes-text"></div>
+</div>
+
+<!-- Bottom-Left Week Switcher -->
+<div class="week-switcher hud-pill fixed bottom-2 left-4 flex items-center gap-1 px-2 py-1 rounded-full z-50">
+  <a href="index.html" class="nav-link">Trọn Bộ 4 Tuần</a>
+  <a href="week1_slides.html" class="nav-link">Tuần 1: Lý Thuyết</a>
+  <a href="week2_slides.html" class="nav-link current">Tuần 2: Python & Sizing</a>
+  <a href="week3_slides.html" class="nav-link">Tuần 3: Xschem & SPICE</a>
+  <a href="week4_slides.html" class="nav-link">Tuần 4: Layout & PEX</a>
+  
+</div>
+
+<!-- Bottom-Right Navigation HUD -->
+<div class="nav-controls hud-pill fixed bottom-2 right-4 flex items-center gap-2 px-3 py-1 rounded-full text-xs mono z-50">
+  <button onclick="toggleNotes()" class="px-2 py-0.5 hover:text-amber-600 font-bold border-r border-sky-200 pr-2.5" title="Speaker Notes (N)">Notes (N)</button>
+  <button onclick="go(-1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Trước (←)">◀</button>
+  <span id="counter" class="font-bold text-sky-900">01 / 20</span>
+  <button onclick="go(1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Tiếp (→)">▶</button>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-track">
+  <div id="progress-fill" class="progress-fill" style="width: 5.00%;"></div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progress-fill');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesText = document.getElementById('notes-text');
+  let idx = 0;
+
+  function show(i) {
+    idx = (i + slides.length) % slides.length;
+    slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+    counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+    progressFill.style.width = (((idx + 1) / slides.length) * 100).toFixed(2) + '%';
+    notesText.textContent = slides[idx].dataset.notes || '';
+  }
+  function go(d) { show(idx + d); }
+  function jumpToId(id) {
+    const pos = slides.findIndex((s) => s.id === id);
+    if (pos >= 0) show(pos);
+  }
+  function toggleNotes() { notesPanel.classList.toggle('open'); }
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key.toLowerCase() === 'n') toggleNotes();
+  });
+  if (window.location.hash) {
+    const target = window.location.hash.slice(1);
+    const pos = slides.findIndex((s) => s.id === target);
+    if (pos >= 0) {
+      idx = pos;
+    } else {
+      const m = target.match(/^s(\d+)$/);
+      if (m) {
+        const n = parseInt(m[1], 10) - 1;
+        if (n >= 0 && n < slides.length) idx = n;
+      }
+    }
+  }
+  show(idx);
+  fit();
+</script>
+</body>
+</html>

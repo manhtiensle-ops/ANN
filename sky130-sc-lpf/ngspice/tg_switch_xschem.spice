@@ -1,0 +1,13 @@
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/tg_switch.sch
+.subckt tg_switch VIN VOUT PHI PHI_B VDD VSS
+*.iopin VIN
+*.iopin VOUT
+*.ipin PHI_B
+*.ipin PHI
+*.iopin VDD
+*.iopin VSS
+XMP VOUT PHI_B VIN VDD sky130_fd_pr__pfet_01v8 L=0.15 W=6.0 nf=2 ad=0.87 as=1.74 pd=6.58 ps=13.16 nrd=0.0483333333333333
++ nrs=0.0483333333333333 sa=0 sb=0 sd=0 mult=1
+XMN VOUT PHI VIN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=2.0 nf=1 ad=0.58 as=0.58 pd=4.58 ps=4.58 nrd=0.145 nrs=0.145 sa=0 sb=0 sd=0
++ mult=1
+.ends

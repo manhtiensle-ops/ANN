@@ -1,0 +1,249 @@
+magic
+tech sky130A
+magscale 1 2
+timestamp 1795622114
+<< metal1 >>
+rect -40 -3726 40 -3674
+<< via1 >>
+rect -26 -3726 26 -3674
+<< metal2 >>
+rect -2395 -3305 2395 -3215
+rect -2395 -1225 2395 -1135
+rect -34 -3742 34 -3658
+rect -40 -3740 40 -3220
+rect -4835 -3995 -1955 -3925
+rect -4835 -4215 -2155 -4145
+rect -4835 -4435 885 -4365
+rect -4835 -4655 1085 -4585
+rect -2036 -4006 -1944 -3914
+rect -2236 -4226 -2144 -4134
+rect -586 -4446 -494 -4354
+rect 804 -4446 896 -4354
+rect -786 -4666 -694 -4574
+rect 1004 -4666 1096 -4574
+rect -4842 -1982 -2348 -1898
+rect -2436 -1986 -2344 -1894
+rect -5796 -3306 -5704 -3214
+rect -5795 -3305 -2305 -3215
+rect -5495 -1225 -2305 -1135
+<< via2 >>
+rect -2018 -3988 -1962 -3932
+rect -2218 -4208 -2162 -4152
+rect -568 -4428 -512 -4372
+rect 822 -4428 878 -4372
+rect -768 -4648 -712 -4592
+rect 1022 -4648 1078 -4592
+rect -2418 -1968 -2362 -1912
+rect -5778 -3288 -5722 -3232
+<< metal3 >>
+rect -1312 -1982 -298 -1898
+rect 338 -1552 2022 -1468
+rect 1938 -2462 2022 -1468
+rect 1788 -2462 2022 -2378
+rect -2042 -4012 -1938 -3908
+rect -2030 -4000 -1950 -2520
+rect -2242 -4232 -2138 -4128
+rect -2230 -4220 -2150 -2240
+rect -2230 -2320 -1950 -2240
+rect -592 -4452 -488 -4348
+rect -580 -4440 -500 -2520
+rect -580 -2600 -300 -2520
+rect 798 -4452 902 -4348
+rect 810 -4440 890 -2240
+rect 810 -2320 1290 -2240
+rect -792 -4672 -688 -4568
+rect -780 -4660 -700 -2240
+rect -780 -2320 -300 -2240
+rect 998 -4672 1102 -4568
+rect 1010 -4660 1090 -2520
+rect 1010 -2600 1290 -2520
+rect -2442 -1992 -2338 -1888
+rect -2432 -1982 -1948 -1898
+rect -5802 12998 -5698 13102
+rect -5805 -3315 -5695 13105
+rect -5802 -3312 -5698 -3208
+rect -1142 88 -1038 192
+rect -1132 -1982 -1048 182
+rect 1928 -212 2032 -108
+rect 1935 -1555 2025 -115
+<< via3 >>
+rect -5782 13018 -5718 13082
+rect -1122 108 -1058 172
+rect 1948 -192 2012 -128
+<< metal4 >>
+rect -4400 1640 -3920 1760
+rect -2100 1640 -1620 1760
+rect 200 1640 680 1760
+rect 2500 1640 2980 1760
+rect 4800 1640 5280 1760
+rect -4400 4140 -3920 4260
+rect 4800 4140 5280 4260
+rect -4400 6640 -3920 6760
+rect 4800 6640 5280 6760
+rect -4400 9140 -3920 9260
+rect 4800 9140 5280 9260
+rect -4400 11640 -3920 11760
+rect -2100 11640 -1620 11760
+rect 200 11640 680 11760
+rect 2500 11640 2980 11760
+rect 4800 11640 5280 11760
+rect -3995 690 -3905 13110
+rect -1695 690 -1605 13110
+rect 605 690 695 13110
+rect 2905 690 2995 13110
+rect 5205 690 5295 13110
+rect -5810 12990 5320 13110
+rect -5802 12998 -5698 13102
+rect -3305 -205 5645 -115
+rect -3300 4160 -2880 4240
+rect -3300 6660 -2880 6740
+rect -3300 9160 -2880 9240
+rect -3300 -200 -3220 9240
+rect 1300 4160 1720 4240
+rect 1300 6660 1720 6740
+rect 1300 9160 1720 9240
+rect 1300 -200 1380 9240
+rect -1460 9160 -580 9240
+rect -1460 -200 -1380 9240
+rect -880 4160 -580 4240
+rect -880 -200 -800 4240
+rect -1130 6660 -580 6740
+rect -1126 104 -1054 6736
+rect -1142 88 -1038 192
+rect 1928 -212 2032 -108
+use tg_switch XTG1
+timestamp 1795622114
+transform 1 0 -1650 0 1 -2900
+box -382 -402 422 1762
+use tg_switch XTG2
+timestamp 1795622114
+transform 1 0 0 0 1 -2900
+box -382 -402 422 1762
+use tg_dummy XDUM2
+timestamp 1795622114
+transform 1 0 1550 0 1 -2900
+box -342 -402 362 1762
+use gr_sc_sw XGR_SC
+timestamp 1795622114
+transform 1 0 0 0 1 -2200
+box -2517 -1523 2517 1523
+use dev_mim_unit XCDUM_0_0
+timestamp 1795622114
+transform 1 0 -4600 0 1 1700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_1_0
+timestamp 1795622114
+transform 1 0 -2300 0 1 1700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_2_0
+timestamp 1795622114
+transform 1 0 0 0 1 1700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_3_0
+timestamp 1795622114
+transform 1 0 2300 0 1 1700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_4_0
+timestamp 1795622114
+transform 1 0 4600 0 1 1700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_0_1
+timestamp 1795622114
+transform 1 0 -4600 0 1 4200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_1_1
+timestamp 1795622114
+transform 1 0 -2300 0 1 4200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_2_1
+timestamp 1795622114
+transform 1 0 0 0 1 4200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_3_1
+timestamp 1795622114
+transform 1 0 2300 0 1 4200
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_4_1
+timestamp 1795622114
+transform 1 0 4600 0 1 4200
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_0_2
+timestamp 1795622114
+transform 1 0 -4600 0 1 6700
+box -701 -1025 701 1025
+use dev_mim_unit XC2_1_2
+timestamp 1795622114
+transform 1 0 -2300 0 1 6700
+box -701 -1025 701 1025
+use dev_mim_unit XC1
+timestamp 1795622114
+transform 1 0 0 0 1 6700
+box -701 -1025 701 1025
+use dev_mim_unit XC2_3_2
+timestamp 1795622114
+transform 1 0 2300 0 1 6700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_4_2
+timestamp 1795622114
+transform 1 0 4600 0 1 6700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_0_3
+timestamp 1795622114
+transform 1 0 -4600 0 1 9200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_1_3
+timestamp 1795622114
+transform 1 0 -2300 0 1 9200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_2_3
+timestamp 1795622114
+transform 1 0 0 0 1 9200
+box -701 -1025 701 1025
+use dev_mim_unit XC2_3_3
+timestamp 1795622114
+transform 1 0 2300 0 1 9200
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_4_3
+timestamp 1795622114
+transform 1 0 4600 0 1 9200
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_0_4
+timestamp 1795622114
+transform 1 0 -4600 0 1 11700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_1_4
+timestamp 1795622114
+transform 1 0 -2300 0 1 11700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_2_4
+timestamp 1795622114
+transform 1 0 0 0 1 11700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_3_4
+timestamp 1795622114
+transform 1 0 2300 0 1 11700
+box -701 -1025 701 1025
+use dev_mim_unit XCDUM_4_4
+timestamp 1795622114
+transform 1 0 4600 0 1 11700
+box -701 -1025 701 1025
+<< labels >>
+rlabel metal2 -4800 -1960 -4740 -1920 1 VIN
+port 1 nsew
+rlabel metal4 5520 -190 5600 -130 1 VX
+port 2 nsew
+rlabel metal2 -4800 -3980 -4740 -3940 1 PHI1
+port 3 nsew
+rlabel metal2 -4800 -4200 -4740 -4160 1 PHI1_B
+port 4 nsew
+rlabel metal2 -4800 -4420 -4740 -4380 1 PHI2
+port 5 nsew
+rlabel metal2 -4800 -4640 -4740 -4600 1 PHI2_B
+port 6 nsew
+rlabel metal2 -5480 -1200 -5420 -1160 1 VDD
+port 7 nsew
+rlabel metal3 -5790 0 -5710 60 1 VSS
+port 8 nsew
+<< properties >>
+string FIXED_BBOX -5810 -4672 5645 13110
+<< end >>

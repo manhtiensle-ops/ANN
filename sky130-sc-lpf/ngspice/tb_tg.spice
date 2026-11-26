@@ -1,0 +1,39 @@
+* Task 3.2 Testbench: CMOS Transmission Gate On-Resistance Sweep (Pre-Layout)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/ngspice/tg_switch_xschem.spice"
+
+Vdd  vdd   0 1.8
+Vss  vss   0 0.0
+Vphi phi   0 1.8
+Vphb phi_b 0 0.0
+
+Vin  vin   0 0.0
+Vtst vout  vin 1m
+
+XTG  vin vout phi phi_b vdd vss tg_switch
+
+* Separate NMOS-only and PMOS-only reference devices (same sizes as tg_switch)
+Vtn  vout_n vin 1m
+XMN_ONLY vout_n phi   vin vss sky130_fd_pr__nfet_01v8 L=0.15 W=2.0  nf=1
+Vtp  vout_p vin 1m
+XMP_ONLY vout_p phi_b vin vdd sky130_fd_pr__pfet_01v8 L=0.15 W=6.0  nf=2
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+dc Vin 0 1.8 0.005
+let ron_tg_kohm = (1m / abs(i(Vtst))) / 1e3
+let ron_n_kohm  = (1m / max(abs(i(Vtn)), 1e-12)) / 1e3
+let ron_p_kohm  = (1m / max(abs(i(Vtp)), 1e-12)) / 1e3
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_tg.raw ron_tg_kohm ron_n_kohm ron_p_kohm
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_tg.txt ron_tg_kohm ron_n_kohm ron_p_kohm
+
+meas dc ron_at_vcm_kohm find ron_tg_kohm at=0.9
+meas dc ron_max_sig_kohm max ron_tg_kohm from=0.5 to=1.3
+meas dc ron_max_rail_kohm max ron_tg_kohm from=0.0 to=1.8
+meas dc ron_min_rail_kohm min ron_tg_kohm from=0.0 to=1.8
+quit
+.endc
+.end

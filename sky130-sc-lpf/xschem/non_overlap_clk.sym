@@ -1,0 +1,36 @@
+v {xschem version=3.4.6 file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @@CLK @@PHI1 @@PHI1_B @@PHI2 @@PHI2_B @@VDD @@VSS @symname"
+template="name=X1"
+}
+V {}
+S {}
+E {}
+L 4 -115 -75 115 -75 {}
+L 4 115 -75 115 75 {}
+L 4 115 75 -115 75 {}
+L 4 -115 75 -115 -75 {}
+T {@name} 115 -91 0 1 0.20 0.20 {}
+T {NON-OVERLAP CLK} 0 0 0 0 0.21 0.21 {hcenter=true vcenter=true layer=7}
+L 4 -135 0 -115 0 {}
+B 5 -137.5 -2.5 -132.5 2.5 {name=CLK dir=in}
+T {CLK} -109 -5 0 0 0.17 0.17 {}
+L 4 115 -45 135 -45 {}
+B 5 132.5 -47.5 137.5 -42.5 {name=PHI1 dir=out}
+T {PHI1} 109 -50 0 1 0.17 0.17 {}
+L 4 115 -15 135 -15 {}
+B 5 132.5 -17.5 137.5 -12.5 {name=PHI1_B dir=out}
+T {PHI1_B} 109 -20 0 1 0.17 0.17 {}
+L 4 115 15 135 15 {}
+B 5 132.5 12.5 137.5 17.5 {name=PHI2 dir=out}
+T {PHI2} 109 10 0 1 0.17 0.17 {}
+L 4 115 45 135 45 {}
+B 5 132.5 42.5 137.5 47.5 {name=PHI2_B dir=out}
+T {PHI2_B} 109 40 0 1 0.17 0.17 {}
+L 4 0 -105 0 -75 {}
+B 5 -2.5 -107.5 2.5 -102.5 {name=VDD dir=inout}
+T {VDD} 0 -69 0 0 0.15 0.15 {hcenter=true}
+L 4 0 75 0 105 {}
+B 5 -2.5 102.5 2.5 107.5 {name=VSS dir=inout}
+T {VSS} 0 59 0 0 0.15 0.15 {hcenter=true}

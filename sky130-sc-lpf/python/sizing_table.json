@@ -1,0 +1,242 @@
+{
+  "hand_calculation_summary": {
+    "ota_5t_hand_math": {
+      "target_GBW_Hz": 10000000.0,
+      "C_L_F": 1e-12,
+      "gm1_min_for_10MHz_uS": 62.83185307179587,
+      "chosen_I_tail_uA": 28.5,
+      "chosen_gm_over_Id_Vinv": 20.4,
+      "predicted_gm1_uS": 290.7,
+      "predicted_GBW_MHz": 46.266341956813974,
+      "chosen_L12_L34_um": 0.8,
+      "uniform_finger_width_um": 4.0
+    },
+    "sc_core_hand_math": {
+      "CA_fF_um2": 2.0,
+      "dw_um": 0.15,
+      "W_drawn_um": 4.85,
+      "L_drawn_um": 9.85,
+      "C_unit_fF": 100.0,
+      "C1_fF": 100.0,
+      "C2_fF": 800.0
+    }
+  },
+  "sizing_table": {
+    "non_overlap_clk": [
+      {
+        "instance": "XINV_IN",
+        "role": "Input clock inverter",
+        "nfet": {
+          "device": "sky130_fd_pr__nfet_01v8",
+          "W_um": 1.0,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "pfet": {
+          "device": "sky130_fd_pr__pfet_01v8",
+          "W_um": 2.5,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "notes": "Sharpens external 10 MHz clock"
+      },
+      {
+        "instance": "XNAND_A, XNAND_B",
+        "role": "Cross-coupled 2-input NAND latch",
+        "nfet": {
+          "device": "sky130_fd_pr__nfet_01v8",
+          "W_um": 1.6,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "pfet": {
+          "device": "sky130_fd_pr__pfet_01v8",
+          "W_um": 2.0,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "notes": "2x series NMOS scaled to equalize pull-down & pull-up"
+      },
+      {
+        "instance": "XDEL1..XDEL6 (x2 branches)",
+        "role": "6-inverter long-channel dead-time delay chain per phase",
+        "nfet": {
+          "device": "sky130_fd_pr__nfet_01v8",
+          "W_um": 0.6,
+          "L_um": 0.95,
+          "nf": 1,
+          "mult": 1
+        },
+        "pfet": {
+          "device": "sky130_fd_pr__pfet_01v8",
+          "W_um": 1.5,
+          "L_um": 0.95,
+          "nf": 1,
+          "mult": 1
+        },
+        "notes": "6 stages (even) with L = 0.95 um set t_nov ~ 2.8 ns cleanly inside [2 ns, 5 ns]"
+      },
+      {
+        "instance": "XBUF1, XBUF2 (Phi & Phi_b drivers)",
+        "role": "Complementary clock output buffers",
+        "nfet": {
+          "device": "sky130_fd_pr__nfet_01v8",
+          "W_um": 2.0,
+          "L_um": 0.15,
+          "nf": 2,
+          "mult": 1
+        },
+        "pfet": {
+          "device": "sky130_fd_pr__pfet_01v8",
+          "W_um": 6.0,
+          "L_um": 0.15,
+          "nf": 2,
+          "mult": 1
+        },
+        "notes": "Fast <150 ps edges driving TG1/TG2 gates"
+      }
+    ],
+    "tg_switch": [
+      {
+        "instance": "XTG1_N, XTG2_N",
+        "role": "Transmission gate NMOS pass transistor (Week 3 Pre-Layout finalized)",
+        "device": "sky130_fd_pr__nfet_01v8",
+        "W_um": 2.0,
+        "L_um": 0.15,
+        "nf": 1,
+        "mult": 1,
+        "W_finger_um": 2.0,
+        "week2_initial_W_um": 4.0,
+        "notes": "Downsized from 4.0->2.0 um in Week 3 to minimize Cdb/Csb parasitic loading on C1=100 fF (Delta fc = +3.36% < 5%)"
+      },
+      {
+        "instance": "XTG1_P, XTG2_P",
+        "role": "Transmission gate PMOS pass transistor (Week 3 Pre-Layout finalized)",
+        "device": "sky130_fd_pr__pfet_01v8",
+        "W_um": 6.0,
+        "L_um": 0.15,
+        "nf": 2,
+        "mult": 1,
+        "W_finger_um": 3.0,
+        "week2_initial_W_um": 12.0,
+        "notes": "Wp/Wn = 3; Ron(0.9V) = 3.71 kOhm, Ron_max = 4.43 kOhm < 5.0 kOhm across full 0..1.8 V rail"
+      },
+      {
+        "instance": "XDUM2 (on VX node only)",
+        "role": "Half-sized charge-cancellation dummy CMOS switch (D-S shorted)",
+        "nfet": {
+          "device": "sky130_fd_pr__nfet_01v8",
+          "W_um": 1.0,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "pfet": {
+          "device": "sky130_fd_pr__pfet_01v8",
+          "W_um": 3.0,
+          "L_um": 0.15,
+          "nf": 1,
+          "mult": 1
+        },
+        "notes": "Placed strictly on high-Z integrating node VX (C2=800 fF); omitted on V1 so C1=100 fF sees minimal parasitic capacitance"
+      }
+    ],
+    "sc_core": [
+      {
+        "instance": "XC1",
+        "role": "Switched sampling capacitor (100.00 fF)",
+        "device": "sky130_fd_pr__cap_mim_m3_1",
+        "W_um": 4.85,
+        "L_um": 9.85,
+        "mult": 1,
+        "C_target_fF": 100.0,
+        "notes": "1x Golden Unit Cell (Weff=5.00 um, Leff=10.00 um)"
+      },
+      {
+        "instance": "XC2",
+        "role": "Integrating hold capacitor (800.00 fF)",
+        "device": "sky130_fd_pr__cap_mim_m3_1",
+        "W_um": 4.85,
+        "L_um": 9.85,
+        "mult": 8,
+        "C_target_fF": 800.0,
+        "notes": "8x parallel Golden Unit Cells in common-centroid array + dummy ring"
+      }
+    ],
+    "ota_5t": [
+      {
+        "instance": "XM1, XM2",
+        "role": "NMOS differential input pair (Common-Centroid ABBA)",
+        "device": "sky130_fd_pr__nfet_01v8",
+        "W_um": 32.0,
+        "L_um": 0.8,
+        "nf": 8,
+        "mult": 1,
+        "W_finger_um": 4.0,
+        "notes": "Moderate inversion (gm/Id ~ 20 V^-1) lowers VGS1 for tail headroom & boosts AOL"
+      },
+      {
+        "instance": "XM3, XM4",
+        "role": "PMOS active current-mirror load (Common-Centroid ABBA)",
+        "device": "sky130_fd_pr__pfet_01v8",
+        "W_um": 16.0,
+        "L_um": 0.8,
+        "nf": 4,
+        "mult": 1,
+        "W_finger_um": 4.0,
+        "notes": "L = 0.80 um yields high ro4 while keeping mirror pole fp2 >> GBW (PM > 80 deg)"
+      },
+      {
+        "instance": "XM5, XM6",
+        "role": "NMOS tail sink & diode bias mirror (I_ref = 30 uA)",
+        "device": "sky130_fd_pr__nfet_01v8",
+        "W_um": 24.0,
+        "L_um": 1.0,
+        "nf": 6,
+        "mult": 1,
+        "W_finger_um": 4.0,
+        "notes": "Uniform 4 um finger width; Vdsat5 < 0.10 V gives wide ICMR around VCM = 0.9 V"
+      }
+    ]
+  },
+  "bsim4_pre_verification": {
+    "ota_5t_bsim4_tt": {
+      "I_ref_uA": 30.0,
+      "I_tail_uA": 28.16388,
+      "P_dc_uW": 104.694984,
+      "V_out_dc_V": 0.8981547,
+      "DC_offset_mV": -1.8453000000000497,
+      "V_tail_V": 0.2375413,
+      "V_d1_V": 0.6854292,
+      "gm1_uS": 289.488,
+      "gm1_over_Id1_Vinv": 20.47724208569533,
+      "ro2_kOhm": 452.7894547147155,
+      "ro4_kOhm": 1776.440631176462,
+      "A_OL_dB": 41.6168,
+      "GBW_MHz": 43.911,
+      "PM_deg": 81.2727,
+      "SR_est_V_us": 28.16388,
+      "saturation_margins_mV": {
+        "M1_Vds_minus_Vdsat": 379.53420000000006,
+        "M2_Vds_minus_Vdsat": 592.9705700000001,
+        "M3_Vsd_minus_Vdsat": 970.7041999999999,
+        "M4_Vsd_minus_Vdsat": 758.0469999999999,
+        "M5_Vds_minus_Vdsat": 136.7552
+      },
+      "all_saturated": true
+    },
+    "non_overlap_clk_bsim4_tt": {
+      "t_nov_1to2_ns": 2.9179399999999998,
+      "t_nov_2to1_ns": 2.91795,
+      "gate_target_ns": [
+        2.0,
+        5.0
+      ],
+      "pass": true
+    }
+  }
+}

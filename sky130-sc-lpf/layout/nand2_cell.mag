@@ -1,0 +1,118 @@
+magic
+tech sky130A
+magscale 1 2
+timestamp 1795622114
+<< nwell >>
+rect -531 681 531 1519
+<< metal1 >>
+rect 341 -42 502 42
+rect 418 -42 502 42
+rect 320 -343 502 -291
+rect 420 -343 500 -291
+rect -502 -343 -320 -291
+rect -500 -343 -420 -291
+rect -299 1058 -128 1142
+rect -212 1058 -128 1142
+rect -210 1440 -130 1492
+rect 341 1058 502 1142
+rect 418 1058 502 1142
+rect 320 1440 502 1492
+rect 420 1440 500 1492
+rect -299 -42 -128 42
+rect 128 -42 299 42
+rect -212 -42 -128 42
+rect 128 -42 212 42
+rect -360 189 -280 241
+rect -360 810 -280 862
+rect 280 189 360 241
+rect 280 810 360 862
+rect -522 -42 -341 42
+rect -522 1058 -341 1142
+rect -522 -42 -438 42
+rect -522 1058 -438 1142
+rect 118 1058 299 1142
+rect 118 1058 202 1142
+<< via1 >>
+rect 434 -26 486 26
+rect 434 -343 486 -291
+rect -486 -343 -434 -291
+rect -196 1074 -144 1126
+rect -196 1440 -144 1492
+rect 434 1074 486 1126
+rect 434 1440 486 1492
+rect -196 -26 -144 26
+rect 144 -26 196 26
+rect -346 189 -294 241
+rect -346 810 -294 862
+rect 294 189 346 241
+rect 294 810 346 862
+rect -506 -26 -454 26
+rect -506 1074 -454 1126
+rect 134 1074 186 1126
+<< metal2 >>
+rect -640 -470 640 -370
+rect -640 1650 640 1750
+rect 418 -42 502 42
+rect 426 -359 494 -275
+rect 426 -454 494 34
+rect -494 -359 -426 -275
+rect -494 -454 -426 -283
+rect -212 1058 -128 1142
+rect -204 1424 -136 1508
+rect -204 1066 -136 1734
+rect 418 1058 502 1142
+rect 426 1424 494 1508
+rect 426 1066 494 1734
+rect -212 -42 -128 42
+rect 128 -42 212 42
+rect -204 -34 204 34
+rect -354 173 -286 257
+rect -354 794 -286 878
+rect -354 181 -286 870
+rect 286 173 354 257
+rect 286 794 354 878
+rect 286 181 354 870
+rect -522 -42 -438 42
+rect -522 1058 -438 1142
+rect -514 -34 -446 1134
+rect -526 474 -434 566
+rect 118 1058 202 1142
+rect 126 486 194 1134
+rect 114 474 206 566
+<< via2 >>
+rect -508 492 -452 548
+rect 132 492 188 548
+<< metal3 >>
+rect -532 468 -428 572
+rect 108 468 212 572
+rect -522 478 202 562
+use dev_n_nand XMNA
+timestamp 1795622114
+transform 1 0 -320 0 1 0
+box -211 -370 211 370
+use dev_n_nand XMNB
+timestamp 1795622114
+transform 1 0 320 0 1 0
+box -211 -370 211 370
+use dev_p_nand XMPA
+timestamp 1795622114
+transform 1 0 -320 0 1 1100
+box -211 -419 211 419
+use dev_p_nand XMPB
+timestamp 1795622114
+transform 1 0 320 0 1 1100
+box -211 -419 211 419
+<< labels >>
+rlabel metal2 -340 380 -300 420 1 A
+port 1 nsew
+rlabel metal2 300 380 340 420 1 B
+port 2 nsew
+rlabel metal2 -500 500 -460 540 1 Y
+port 3 nsew
+rlabel metal2 -40 1670 40 1730 1 VDD
+port 4 nsew
+rlabel metal2 -40 -450 40 -390 1 VSS
+port 5 nsew
+<< properties >>
+string FIXED_BBOX -640 -470 640 1750
+<< end >>

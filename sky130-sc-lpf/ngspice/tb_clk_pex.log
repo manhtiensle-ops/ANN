@@ -1,0 +1,58 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * week 4 task 4.3a testbench: 10 mhz non-overlapping clock generator (post-layout pex)
+
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Note: Starting dynamic gmin stepping
+Warning: Dynamic gmin stepping failed
+Note: Starting true gmin stepping
+Note: True gmin stepping completed
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                        1.8
+vss                                          0
+clk                                          0
+xclk.xnand_b.a                             1.8
+phi1                               4.43857e-07
+xclk.xda4.a                         1.3017e-08
+xclk.xda4.y                                1.8
+xclk.xnand_b.b                             1.8
+xclk.xnand_b.y                     8.36442e-07
+phi2                                       1.8
+phi2_b                             4.43857e-07
+xclk.xdb1.y                                1.8
+xclk.xdb2.y                         1.3017e-08
+xclk.xdb3.y                                1.8
+xclk.xdb4.y                         1.3017e-08
+xclk.xdb5.y                                1.8
+xclk.xda6.a                         1.3017e-08
+xclk.xdb6.y                         1.3017e-08
+xclk.xnand_a.y                             1.8
+xclk.xda2.a                         1.3017e-08
+xclk.xda2.y                                1.8
+phi1_b                                     1.8
+vclk#branch                                  0
+vss#branch                         3.06331e-09
+vdd#branch                        -3.06331e-09
+
+
+No. of Data Rows : 25038
+binary raw file "/headless/ANN/sky130-sc-lpf/ngspice/tb_clk_pex.raw"
+t_nov_12            =  3.80577e-09 targ=  6.30291e-08 trig=  5.92234e-08
+t_nov_21            =  3.72695e-09 targ=  1.13085e-07 trig=  1.09358e-07
+tr_phi1             =  2.17796e-10 targ=  1.13188e-07 trig=  1.12971e-07
+tf_phi1             =  2.95545e-10 targ=  5.93531e-08 trig=  5.90576e-08
+max_overlap_v2      =  3.01734e-03 at=  1.05355e-07
+ngspice-47 done

@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SKY130-SC-LPF — Tuần 1: Cơ Sở Lý Thuyết &amp; Kiến Trúc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+:root {
+  --ink: #0C4A6E;
+  --ink-dark: #082F49;
+  --ocean: #0284C7;
+  --ocean-deep: #0369A1;
+  --ocean-soft: #E0F2FE;
+  --sky-bg: #F7FBFF;
+  --gold: #D97706;
+  --gold-bright: #F59E0B;
+  --gold-soft: #FEF3C7;
+  --gold-pale: #FFFBEB;
+  --white: #FFFFFF;
+  --border-blue: #BAE6FD;
+  --border-gold: #FDE68A;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #DBEAFE 0%, #F0F9FF 50%, #FEF3C7 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-dark);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+.katex, .code-tag, .code-tag-gold, .normal-case { text-transform: none !important; }
+.code-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.code-tag-gold {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+#deck {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: center center;
+}
+.slide {
+  width: 1280px;
+  height: 720px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 44px 36px 44px;
+  background: var(--sky-bg);
+  border-top: 5px solid #0284C7;
+  border-bottom: 3px solid #F59E0B;
+  overflow: hidden;
+  box-shadow: 0 22px 55px rgba(3, 105, 161, 0.16);
+}
+.slide::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0) 70%);
+  pointer-events: none;
+}
+.slide.active { display: flex; }
+.slide-cover {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 56%, #FEF3C7 100%);
+  color: #082F49;
+  border-top: 7px solid #0369A1;
+  border-bottom: 5px solid #F59E0B;
+}
+.slide-cover::after {
+  content: "";
+  position: absolute;
+  bottom: -110px;
+  left: -90px;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.10) 0%, rgba(2, 132, 199, 0) 70%);
+  pointer-events: none;
+}
+.ieee-card {
+  background: #FFFFFF;
+  border: 1px solid #BAE6FD;
+  border-radius: 13px;
+  padding: 14px 18px;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.06);
+}
+.gold-card {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.08);
+}
+.ocean-card {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 1.5px solid #0284C7;
+  border-radius: 13px;
+  padding: 14px 18px;
+  color: #082F49;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.08);
+}
+.fig-frame {
+  background: #FFFFFF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 14px rgba(3, 105, 161, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.badge-ocean {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #7DD3FC;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-gold {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.badge-blue {
+  background: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #93C5FD;
+  padding: 2px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.ieee-table { width: 100%; border-collapse: collapse; }
+.ieee-table thead tr {
+  background: linear-gradient(90deg, #0369A1 0%, #0284C7 100%);
+  color: #FFFFFF;
+  border-bottom: 2.5px solid #F59E0B;
+}
+.ieee-table tbody tr:nth-child(even) { background: #F0F9FF; }
+.ieee-table tbody tr:nth-child(odd) { background: #FFFFFF; }
+.ieee-table tbody tr.row-gold { background: #FFFBEB; }
+.transition-hook {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #FFFBEB 0%, #EFF6FF 100%);
+  border: 1px solid #FDE68A;
+  border-left: 5px solid #F59E0B;
+  border-radius: 9px;
+  padding: 6px 14px;
+  font-size: 12.2px;
+  color: #0C4A6E;
+  font-weight: 500;
+}
+.katex { font-size: 0.99em !important; }
+.progress-track {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(2, 132, 199, 0.14);
+  z-index: 40;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284C7, #38BDF8, #F59E0B);
+  transition: width 0.25s ease;
+}
+#notes-panel {
+  position: fixed;
+  left: 22px;
+  bottom: 48px;
+  max-width: 790px;
+  background: #FFFFFF;
+  color: #082F49;
+  border: 2px solid #0284C7;
+  border-top: 5px solid #F59E0B;
+  border-radius: 13px;
+  padding: 13px 18px;
+  font-size: 13px;
+  line-height: 1.52;
+  box-shadow: 0 14px 36px rgba(3, 105, 161, 0.20);
+  z-index: 55;
+  display: none;
+}
+#notes-panel.open { display: block; }
+.hud-pill {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #7DD3FC;
+  color: #0369A1;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.14);
+}
+.nav-link {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0369A1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.nav-link:hover { background: #E0F2FE; }
+.nav-link.current {
+  background: linear-gradient(90deg, #0284C7, #0369A1);
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35);
+}
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body {
+    background: #FFFFFF;
+    overflow: visible;
+    height: auto;
+    width: auto;
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #deck { transform: none !important; width: 1280px; height: auto; }
+  .slide {
+    position: relative !important;
+    display: flex !important;
+    page-break-after: always;
+    break-after: page;
+    box-shadow: none !important;
+  }
+  .nav-controls, .week-switcher, .progress-track, #notes-panel { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <section class="slide slide-cover active" id="w1-start" data-notes="Báo cáo Tuần 1 theo mạch 5 Hồi từ trên xuống: Hồi I đặt bài toán nhiễu tại đầu thu; Hồi II dùng Tín hiệu &amp; Hệ thống dẫn xuất từng thông số chip; Hồi III hiện thực hóa 4 khối trên sky130A; Hồi IV đặc tả INPUT/OUTPUT; Hồi V chứng minh kiểm định ổn định LTI/LPTV và chốt Gate 1.">
+    
+            <div class="flex items-center justify-between border-b-2 border-sky-200 pb-3 relative z-10">
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-md bg-sky-600 text-white text-xs font-bold tracking-widest uppercase mono">IEEE / ISSCC DESIGN DECK</span>
+                <span class="text-sky-900 text-sm font-semibold mono">SkyWater 130nm (sky130A) • Nguồn đơn 1.8 V</span>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold mono">TUẦN 01 / 04 — LÝ THUYẾT &amp; KIẾN TRÚC</span>
+            </div>
+
+            <div class="my-auto py-1 relative z-10">
+              <p class="text-amber-700 font-bold tracking-wider uppercase text-xs mono mb-1.5">Top-Down 3-Tier Analog IC Design • sky130-sc-lpf</p>
+              <h1 class="text-[44px] font-extrabold tracking-tight leading-tight text-sky-950 max-w-5xl">
+                Mạch Lọc Thông Thấp Tụ Chuyển Mạch<br />
+                <span class="text-sky-600">Trên Tiến Trình SkyWater 130nm</span>
+              </h1>
+              <p class="text-sky-900 text-base mt-3 max-w-4xl">
+                Báo cáo chuyên sâu Tuần 1: Dẫn xuất liền mạch từ <strong class="text-amber-800">Vấn đề vật lý đầu thu</strong> $\rightarrow$ <strong class="text-sky-700">Lý thuyết Tín hiệu &amp; Hệ thống quyết định thông số</strong> $\rightarrow$ <strong class="text-sky-950">Hiện thực Vi mạch 4 khối &amp; Kiểm định ổn định</strong>.
+              </p>
+
+              <div class="grid grid-cols-5 gap-3 mt-7">
+                <div class="gold-card p-3.5">
+                  <div class="text-amber-800 text-[11px] font-bold mono uppercase">Hồi I • Slide 02–03</div>
+                  <div class="text-sm font-extrabold text-sky-950 mt-1">Bài Toán &amp; Đối Tượng</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Lỗi Aliasing ADC &amp; chân dung tín hiệu thực.</div>
+                </div>
+                <div class="ocean-card p-3.5">
+                  <div class="text-sky-700 text-[11px] font-bold mono uppercase">Hồi II • Slide 04–09</div>
+                  <div class="text-sm font-extrabold text-sky-950 mt-1">S&amp;S → Thông Số Chip</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Dẫn xuất $f_c, f_{\text{clk}}, K=8, kT/C, \text{PM}\ge 60^\circ$.</div>
+                </div>
+                <div class="ieee-card border-sky-400 p-3.5">
+                  <div class="text-sky-700 text-[11px] font-bold mono uppercase">Hồi III • Slide 10–14</div>
+                  <div class="text-sm font-extrabold text-sky-950 mt-1">Vi Mạch Sky130A</div>
+                  <div class="text-sky-900/80 text-xs mt-1">PVT MIM, CLK, khóa TG, ký sinh &amp; 5T-OTA.</div>
+                </div>
+                <div class="gold-card p-3.5">
+                  <div class="text-amber-800 text-[11px] font-bold mono uppercase">Hồi IV • Slide 15–16</div>
+                  <div class="text-sm font-extrabold text-sky-950 mt-1">Sản Phẩm &amp; I/O</div>
+                  <div class="text-sky-900/80 text-xs mt-1">Sơ đồ 4 khối chuẩn IEEE, INPUT &amp; OUTPUT.</div>
+                </div>
+                <div class="ocean-card p-3.5">
+                  <div class="text-sky-700 text-[11px] font-bold mono uppercase">Hồi V • Slide 17–20</div>
+                  <div class="text-sm font-extrabold text-sky-950 mt-1">Kiểm Định Ổn Định</div>
+                  <div class="text-sky-900/80 text-xs mt-1">LTI vs LPTV, 22/22 SI &amp; Chốt Gate 1.</div>
+                </div>
+              </div>
+            </div>
+            
+    <div class="space-y-1.5 relative z-10">
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi dẫn nhập →</span>
+        <span>Mọi con chip tương tự đều bắt đầu từ một sự cố vật lý của tín hiệu thực tế — vậy hệ thống thu đang gặp rủi ro gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/75 font-medium pt-0.5">
+        Principal Analog IC Architect • Phím N bật Speaker Notes • Ctrl+P xuất PDF • <span class="mono font-bold">Slide 01 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s2" data-notes="LPF tương tự đặt ngay trước ADC nhằm ngăn chặn chồng phổ (Aliasing) bất khả nghịch của nhiễu &gt;= 2 MHz và tránh bão hòa thang đo 1.8 V của ADC.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I (Tầng 1) — Bối Cảnh Hệ Thống &amp; Lý Do Chọn LPF</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tại Sao Chuỗi Thu Mixed-Signal Bắt Buộc Cần Mạch Lọc Thông Thấp?</h2>
+      </div>
+      <span class="badge-gold">Tầng 1: Physical Problem</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-2.5 px-4">
+              <svg viewBox="0 0 1120 176" class="w-full h-[168px]">
+                
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+                <rect x="12" y="30" width="214" height="114" rx="12" fill="#F0F9FF" stroke="#0284C7" stroke-width="2" />
+                <text x="119" y="56" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">1. Nguồn Hạ Tần / Cảm Biến</text>
+                <text x="119" y="78" text-anchor="middle" font-size="11.5" fill="#0C4A6E">RF Downconverter / MEMS</text>
+                <text x="119" y="104" text-anchor="middle" font-size="12" font-weight="800" fill="#0284C7">Tín hiệu đích: ≤ 50 kHz</text>
+                <text x="119" y="124" text-anchor="middle" font-size="11" fill="#B45309">Lẫn nhiễu mạnh ≥ 2 MHz</text>
+                <line x1="226" y1="87" x2="266" y2="87" stroke="#0284C7" stroke-width="2.4" marker-end="url(#arr-blue)" />
+
+                <rect x="272" y="20" width="245" height="134" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2" />
+                <text x="394" y="45" text-anchor="middle" font-size="13" font-weight="800" fill="#B45309">2. Tín Hiệu Thô Chưa Lọc</text>
+                <path d="M 294 94 Q 308 62, 322 90 T 350 66 T 378 100 T 406 118 T 434 90 T 462 68 T 496 94" fill="none" stroke="#D97706" stroke-width="2.4" />
+                <text x="394" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#78350F">Nhiễu cao tần bao vây dải thông</text>
+
+                <path d="M 517 58 L 572 58 L 572 41 L 615 41" fill="none" stroke="#D97706" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#arr-gold)" />
+                <rect x="622" y="10" width="484" height="60" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+                <text x="864" y="34" text-anchor="middle" font-size="13" font-weight="800" fill="#92400E">✗ Nếu thiếu LPF trước ADC</text>
+                <text x="864" y="55" text-anchor="middle" font-size="12" fill="#78350F">Gập phổ (Aliasing) đè lên 50 kHz + Quá tải biên độ (Clipping ADC)</text>
+
+                <path d="M 517 114 L 572 114 L 572 130 L 615 130" fill="none" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+                <rect x="622" y="92" width="215" height="74" rx="11" fill="#0369A1" stroke="#F59E0B" stroke-width="2.2" />
+                <text x="729" y="121" text-anchor="middle" font-size="14" font-weight="800" fill="#FEF3C7">Lá Chắn SC-LPF</text>
+                <text x="729" y="144" text-anchor="middle" font-size="11.5" fill="#E0F2FE">Giữ dải thấp • Triệt nhiễu cao</text>
+
+                <line x1="837" y1="130" x2="873" y2="130" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arr-blue)" />
+                <rect x="880" y="92" width="226" height="74" rx="11" fill="#E0F2FE" stroke="#0284C7" stroke-width="2.2" />
+                <text x="993" y="121" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">✓ SAR-ADC → Xử Lý Số DSP</text>
+                <text x="993" y="144" text-anchor="middle" font-size="11.5" fill="#0C4A6E">Phổ sạch • Bảo toàn SNR</text>
+              </svg>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5">
+              <div class="gold-card border-l-4 border-l-amber-500 py-3">
+                <div class="text-xs font-bold uppercase text-amber-800 mono">Thảm họa 1 • Chồng phổ bất khả nghịch</div>
+                <p class="text-sm text-sky-950 mt-1">
+                  Một khi nhiễu $\ge 2\text{ MHz}$ đã gập vào dải $0\text{–}50\text{ kHz}$ sau lấy mẫu ADC, <strong>không bộ lọc số DSP nào tách lại được</strong>.
+                </p>
+              </div>
+              <div class="ocean-card border-l-4 border-l-sky-600 py-3">
+                <div class="text-xs font-bold uppercase text-sky-800 mono">Thảm họa 2 • Sập dải động (Desensitization)</div>
+                <p class="text-sm text-sky-950 mt-1">
+                  Gai nhiễu lớn cộng chồng lên tín hiệu làm kịch trần nguồn $1.8\text{ V}$, gây méo xén đỉnh nghiêm trọng.
+                </p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Ta đã biết vì sao cần LPF — vậy chân dung định lượng cụ thể của đối tượng tín hiệu và nhiễu trên chip $1.8\text{ V}$ là gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 02 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s3" data-notes="Tín hiệu hữu ích nằm ở &lt;= 50 kHz (0.30 Vp), nhiễu &gt;= 2 MHz (0.12 Vp). Vì chip chạy nguồn đơn 1.8 V, mọi tín hiệu phải dịch lên điểm giữa VCM = 0.9 V để dao động đối xứng.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi I (Tầng 1) — Đặc Tả Đối Tượng Xử Lý</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Chân Dung Tín Hiệu Đích, Nguồn Nhiễu &amp; Ràng Buộc Nguồn Đơn $1.8\text{ V}$</h2>
+      </div>
+      <span class="badge-gold">Signal &amp; Interferer Profile</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-3 gap-5">
+              <div class="ieee-card border-t-4 border-t-sky-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Tín hiệu hữu ích (Passband)</span>
+                  <h3 class="font-extrabold text-sky-950 text-lg mt-1">Băng Gốc $\le 50\text{ kHz}$</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-sky-900 list-disc pl-4">
+                    <li><strong>Nguồn gốc:</strong> Ngõ ra Mixer BLE/IoT, cảm biến MEMS, siêu âm, DAC.</li>
+                    <li><strong>Biên độ điển hình:</strong> $A_{\text{sig}} = 0.30\text{ V}_p$.</li>
+                    <li><strong>Bảo toàn:</strong> Suy hao $\le 0.5\text{ dB}$, trễ nhóm phẳng không méo dạng.</li>
+                  </ul>
+                </div>
+                <div class="mt-4 p-2 rounded-lg bg-sky-50 border border-sky-200 text-xs font-bold text-sky-800 text-center">
+                  Mục tiêu: Giữ nguyên $\ge 95\%$ biên độ gốc
+                </div>
+              </div>
+
+              <div class="gold-card border-t-4 border-t-amber-500 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">2. Tạp nhiễu (Stopband)</span>
+                  <h3 class="font-extrabold text-sky-950 text-lg mt-1">Can Nhiễu $\ge 2\text{ MHz}$</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-sky-900 list-disc pl-4">
+                    <li><strong>Nguồn gốc:</strong> Kênh vô tuyến lân cận, gợn nguồn xung DC–DC, hài clock số.</li>
+                    <li><strong>Biên độ nhiễu:</strong> $A_{\text{int}} \approx 0.12\text{ V}_p$.</li>
+                    <li><strong>Triệt tiêu:</strong> Nén tối thiểu <strong>$\ge 20\text{ dB}$</strong> (giảm $\ge 10\times$ biên độ).</li>
+                  </ul>
+                </div>
+                <div class="mt-4 p-2 rounded-lg bg-white border border-amber-300 text-xs font-bold text-amber-900 text-center">
+                  Mục tiêu: Giảm công suất nhiễu $\ge 100\times$
+                </div>
+              </div>
+
+              <div class="ocean-card border-t-4 border-t-blue-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-blue-700 mono">3. Dịch mức DC trên Chip</span>
+                  <h3 class="font-extrabold text-sky-950 text-lg mt-1">$V_{DD}=1.8\text{ V}, V_{CM}=0.9\text{ V}$</h3>
+                  <div class="bg-white border border-sky-200 rounded-lg p-2 my-2.5 text-center text-sm">
+                    $$v_{\text{in}}(t) = \underbrace{0.9\text{ V}}_{V_{CM}} + x_{\text{sig}}(t) + x_{\text{int}}(t)$$
+                  </div>
+                  <ul class="space-y-1.5 text-sm text-sky-900 list-disc pl-4">
+                    <li>Tổng biên độ đỉnh $0.30 + 0.12 = 0.42\text{ V}$.</li>
+                    <li>Đặt $V_{CM} = V_{DD}/2 = \mathbf{0.9\text{ V}}$ tối ưu dải đối xứng $[0.5, 1.3]\text{ V}$.</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded-lg bg-white border border-sky-300 text-xs font-bold text-blue-800 text-center">
+                  Tránh méo hài lẻ $\text{HD}_3, \text{HD}_5$ do Clipping
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Từ hai mốc $50\text{ kHz}$ ($\le 0.5\text{ dB}$) và $2\text{ MHz}$ ($\ge 20\text{ dB}$), lý thuyết Tín hiệu &amp; Hệ thống tính ra bậc lọc $N$ và tần số cắt $f_c$ như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 03 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s4" data-notes="Khoảng cách 50 kHz -&gt; 2 MHz là 1.602 decade. Bậc N=1 dốc -20 dB/dec là đủ và đơn giản nhất. Giải hai bất phương trình biên độ khóa chặt fc vào [143.14, 201.01] kHz.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II (Tầng 2) — Tín Hiệu &amp; Hệ Thống Quyết Định Bậc Lọc &amp; $f_c$</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Giải Bất Phương Trình Phổ: Vì Sao Chọn Bậc $N=1$ &amp; $f_c \in [143.1, 201.0]\text{ kHz}$?</h2>
+      </div>
+      <span class="badge-ocean">S&amp;S Spec Derivation #1</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-6 ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Chứng minh bậc lọc tối giản $N = 1$</span>
+                  <p class="text-sm text-sky-900 mt-1.5">Khoảng chuyển tiếp tần số từ dải thông đến nhiễu:</p>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2.5 my-2.5 text-center">
+                    $$\Delta_{\text{dec}} = \log_{10}\!\left(\frac{2\text{ MHz}}{50\text{ kHz}}\right) = \log_{10}(40) = \mathbf{1.602\text{ decade}}$$
+                  </div>
+                  <ul class="text-sm text-sky-900 space-y-1.5 list-disc pl-4">
+                    <li>Lọc bậc $N=1$ dốc <strong>$-20\text{ dB/dec}$</strong> $\implies$ dư khả năng nén $\ge 20\text{ dB}$ trong $1.6\text{ dec}$ mà chỉ cần đúng 1 OTA.</li>
+                    <li>Hàm truyền chuẩn: $H(s) = \frac{1}{1 + s/(2\pi f_c)}$, $|H(jf)|^2 = \frac{1}{1 + (f/f_c)^2}$.</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs text-amber-950">
+                  <strong>Lợi ích Tín hiệu &amp; Hệ thống:</strong> Không cực phức liên hợp $\implies$ <strong>0% vọt lố nội tại</strong>, pha gần tuyến tính ($-14.9^\circ$ tại $50\text{ kHz}$).
+                </div>
+              </div>
+
+              <div class="col-span-6 ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-700 mono">2. Giải hệ bất phương trình đóng khung $f_c$</span>
+                  <div class="mt-2.5 space-y-2.5 text-sm">
+                    <div class="p-2.5 rounded-lg bg-sky-50 border border-sky-200">
+                      <strong class="text-sky-900">Cận dưới (Dải thông $50\text{ kHz}$ suy hao $\le 0.5\text{ dB}$):</strong>
+                      $$10\log_{10}\!\left[1 + \left(\frac{50\text{ kHz}}{f_c}\right)^2\right] \le 0.5 \implies \mathbf{f_c \ge 143.14\text{ kHz}}$$
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-300">
+                      <strong class="text-amber-900">Cận trên (Dải chắn $2\text{ MHz}$ nén $\ge 20\text{ dB}$):</strong>
+                      $$10\log_{10}\!\left[1 + \left(\frac{2000\text{ kHz}}{f_c}\right)^2\right] \ge 20 \implies \mathbf{f_c \le 201.01\text{ kHz}}$$
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3 p-3 rounded-xl ocean-card text-center">
+                  <div class="text-xs text-sky-800 uppercase font-bold mono">Miền nghiệm bắt buộc từ Tín hiệu &amp; Hệ thống</div>
+                  <div class="text-base font-extrabold text-sky-950 mt-0.5">$$\mathbf{143.14\text{ kHz} \;\le\; f_c \;\le\; 201.01\text{ kHz}}$$</div>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Đã khóa miền nghiệm $f_c \in [143.1, 201.0]\text{ kHz}$ — vậy khi rời rạc hóa theo thời gian, Định lý Nyquist bắt buộc chọn $f_{\text{clk}}$ bằng bao nhiêu?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 04 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s5" data-notes="H(e^jwT) lặp lại tuần hoàn tại bội số f_clk. Chọn 10 MHz đạt OSR=26.64, đẩy dải ảnh ra 9.81 MHz mà chỉ cần tỷ số tụ 1:8 và bán chu kỳ 50 ns rất dễ thiết kế OTA.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II (Tầng 2) — Định Lý Lấy Mẫu Nyquist &amp; Sự Tuần Hoàn Phổ</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tại Sao Phổ Tuần Hoàn $X_s(f)$ Ép Xung Nhịp Lấy Mẫu Tại $f_{\text{clk}} = 10\text{ MHz}$?</h2>
+      </div>
+      <span class="badge-ocean">S&amp;S Spec Derivation #2</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-2 px-4">
+              <svg viewBox="0 0 1120 150" class="w-full h-[142px]">
+                
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+                <line x1="50" y1="120" x2="1080" y2="120" stroke="#0C4A6E" stroke-width="2" />
+                <line x1="70" y1="18" x2="70" y2="128" stroke="#0C4A6E" stroke-width="2" />
+                <text x="58" y="28" text-anchor="end" font-size="11" font-weight="700" fill="#0C4A6E">0 dB</text>
+                <text x="1086" y="124" font-size="12" font-weight="800" fill="#0C4A6E">f</text>
+
+                <path d="M 70 28 Q 150 28, 195 63 Q 270 108, 515 114" fill="none" stroke="#0284C7" stroke-width="3" />
+                <polygon points="70,120 70,32 135,32 135,120" fill="#BAE6FD" opacity="0.65" />
+                <text x="112" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="#0369A1">Dải thông (≤ fc)</text>
+                <line x1="195" y1="63" x2="195" y2="120" stroke="#D97706" stroke-width="1.6" stroke-dasharray="4,3" />
+                <text x="195" y="138" text-anchor="middle" font-size="11" font-weight="800" fill="#B45309">fc ≈ 188 kHz</text>
+
+                <line x1="340" y1="84" x2="340" y2="120" stroke="#D97706" stroke-width="4" />
+                <text x="340" y="76" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">Nhiễu 2 MHz (−20 dB)</text>
+                <text x="340" y="138" text-anchor="middle" font-size="11" fill="#0C4A6E">2 MHz</text>
+
+                <line x1="515" y1="20" x2="515" y2="120" stroke="#64748B" stroke-width="1.6" stroke-dasharray="5,4" />
+                <text x="515" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">f_Nyquist = 5 MHz</text>
+
+                <path d="M 515 114 Q 760 108, 835 63 Q 880 28, 960 28 Q 1015 28, 1050 63" fill="none" stroke="#0284C7" stroke-width="3" />
+                <polygon points="895,120 895,32 1015,32 1015,120" fill="#FEF3C7" opacity="0.85" />
+                <line x1="960" y1="20" x2="960" y2="120" stroke="#0C4A6E" stroke-width="1.8" stroke-dasharray="4,3" />
+                <text x="960" y="138" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0C4A6E">f_clk = 10 MHz</text>
+                <text x="955" y="20" text-anchor="middle" font-size="11" font-weight="800" fill="#B45309">Cửa sổ Ảnh Aliasing (9.81–10.19 MHz)</text>
+
+                <line x1="210" y1="50" x2="880" y2="50" stroke="#0284C7" stroke-width="2" marker-end="url(#arr-blue)" />
+                <text x="545" y="43" text-anchor="middle" font-size="12" font-weight="800" fill="#0369A1">Khoảng cách an toàn OSR = 26.64 → Đẩy dải ảnh cách xa 9.81 MHz!</text>
+              </svg>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div class="gold-card border-l-4 border-l-amber-600 py-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold uppercase text-amber-900 mono">Nếu $f_{\text{clk}} = 1\text{ MHz}$</span>
+                  <span class="badge-gold">Quá thấp</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>$\text{OSR} \approx 2.6$: Ảnh chồng phổ sát ngay <strong>$812\text{ kHz}$</strong>.</li>
+                  <li>Góc rời rạc $\Omega_c = \omega_c T_{\text{clk}} = 1.18\text{ rad}$ gây <strong>méo tần số nặng</strong>.</li>
+                </ul>
+              </div>
+
+              <div class="ocean-card border-2 border-sky-600 py-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">Chốt $f_{\text{clk}} = 10\text{ MHz}$</span>
+                  <span class="badge-ocean">Nghiệm Vàng</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>$\text{OSR} = \mathbf{26.64}$, góc nhỏ $\Omega_c = \mathbf{0.118\text{ rad}} \ll 1$ ($H(z) \approx H(s)$).</li>
+                  <li>Ảnh ở $9.81\text{ MHz}$; bán chu kỳ $50\text{ ns}$ thoải mái cho OTA.</li>
+                </ul>
+              </div>
+
+              <div class="ieee-card border-l-4 border-l-amber-500 py-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">Nếu $f_{\text{clk}} = 100\text{ MHz}$</span>
+                  <span class="badge-gold">Lãng phí</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                  <li>Phải tăng tỷ số tụ $C_2/C_1 = \mathbf{80}$ $\implies$ tốn diện tích MIM gấp $10\times$.</li>
+                  <li>Bán chu kỳ còn $5\text{ ns}$ ép $\text{GBW} &gt; 100\text{ MHz}$ (đốt dòng lớn).</li>
+                </ul>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi đã khóa $f_{\text{clk}} = 10\text{ MHz}$ và miền nghiệm $f_c \in [143.1, 201.0]\text{ kHz}$, tại sao tỷ số tụ nguyên bắt buộc phải là $K = C_2/C_1 = 8$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 05 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s6" data-notes="Để ghép đôi chính xác &lt;0.1%, K=C2/C1 phải là số nguyên. K=7 trượt 20 dB tại 2 MHz; K&gt;=11 trượt 0.5 dB tại 50 kHz. K=8 vừa đạt chuẩn vừa cho tổng 9 ô tụ (3x3 đối xứng tâm hoàn hảo).">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II (Tầng 2 → Tầng 3) — Lượng Tử Hóa Tỷ Số Tụ Nguyên</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Đồ Thị Không Gian Thiết Kế: Vì Sao Khóa Chặt Tỷ Số $K = C_2/C_1 = 8$?</h2>
+      </div>
+      <span class="badge-ocean">Exact Design Space Proof</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="fig-frame">
+              <img src="figs/week1_ss_spec_window.png" alt="Design space K=8" class="max-h-[330px] w-auto object-contain" />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="gold-card border-l-4 border-l-amber-600 py-2.5">
+                <div class="text-xs font-bold uppercase text-amber-900 mono">1. Loại $K \le 7$ &amp; $K \ge 11$</div>
+                <p class="text-xs text-sky-950 mt-1">$K=7$ cho nén $2\text{ MHz} = \mathbf{18.9\text{ dB}} &lt; 20\text{ dB}$ (trượt dải chắn); $K \ge 11$ gây suy hao $50\text{ kHz} &gt; 0.5\text{ dB}$.</p>
+              </div>
+              <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                <div class="text-xs font-bold uppercase text-sky-800 mono">2. Nghiệm tối ưu $K = 8$ ($\alpha = 1/9$)</div>
+                <p class="text-xs text-sky-950 mt-1">Đạt vừa khít <strong>$-20.02\text{ dB}$</strong> tại $2\text{ MHz}$, chỉ mất <strong>$-0.30\text{ dB}$</strong> tại $50\text{ kHz}$ với số ô tụ nhỏ nhất.</p>
+              </div>
+              <div class="ieee-card border-l-4 border-l-blue-600 py-2.5">
+                <div class="text-xs font-bold uppercase text-blue-700 mono">3. Hình học Vàng $1 + 8 = 9 = 3\times 3$</div>
+                <p class="text-xs text-sky-950 mt-1">Đặt $C_1$ tại tâm $(2,2)$ và $8$ ô $C_2$ bao quanh tạo <strong>ma trận đối xứng tâm Common-Centroid</strong> triệt gradient!</p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Tại sao với $K = 8$ và $R_{\text{eq}} = 1\text{ M}\Omega$, mạch $RC$ liên tục cắt ở $198.94\text{ kHz}$ nhưng mạch tụ chuyển mạch lại cắt chính xác ở $187.675\text{ kHz}$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 06 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s7" data-notes="Bảo toàn điện tích 2 pha cho ra hàm truyền Backward-Euler H(z) = (1/9)/(1 - (8/9)z^-1). Cực 8/9 &gt; e^(-1/8) làm tần số cắt dịch xuống 187.675 kHz (-5.66%).">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II (Tầng 2) — Phương Trình Sai Phân &amp; Ánh Xạ Miền $\mathcal{Z}$</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảo Toàn Điện Tích 2 Pha, Ánh Xạ Backward-Euler &amp; Ổn Định BIBO</h2>
+      </div>
+      <span class="badge-ocean">Exact Z-Domain Model</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-6 ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. Từ bảo toàn điện tích đến Phương trình sai phân</span>
+                  <div class="mt-2 space-y-2 text-sm text-sky-950">
+                    <div class="p-2 rounded-lg bg-sky-50 border border-sky-200">
+                      <strong>Pha $\Phi_1$ (Lấy mẫu):</strong> $Q_1^{(1)} = C_1 V_{\text{in}}[n], \quad Q_2^{(1)} = C_2 V_{\text{out}}[n-1]$
+                    </div>
+                    <div class="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                      <strong>Pha $\Phi_2$ (Chia sẻ $C_1 \parallel C_2$):</strong> $(C_1 + C_2)V_{\text{out}}[n] = C_1 V_{\text{in}}[n] + C_2 V_{\text{out}}[n-1]$
+                    </div>
+                  </div>
+                  <p class="text-xs text-sky-900 mt-2">
+                    Chia cho $T_{\text{clk}}$: tương đương thay đạo hàm $s \leftarrow \frac{1 - z^{-1}}{T_{\text{clk}}}$ (<strong>Ánh xạ Backward-Euler</strong> của mạch $RC$ có $\tau = \frac{C_2}{C_1}T_{\text{clk}}$):
+                  </p>
+                </div>
+                <div class="mt-2 p-2.5 rounded-xl ocean-card text-center">
+                  <div class="text-xs text-sky-800 uppercase font-bold mono">Hàm truyền chính xác ($\alpha = \frac{C_1}{C_1+C_2} = \frac{1}{9}$)</div>
+                  $$H(z) = \frac{\alpha}{1 - (1-\alpha)z^{-1}} = \frac{1/9}{1 - \frac{8}{9}z^{-1}}$$
+                </div>
+              </div>
+
+              <div class="col-span-6 ieee-card flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-700 mono">2. Giải chính xác $f_{c,\text{SC}}$ &amp; Lý giải độ lệch $-5.66\%$</span>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2 my-2 text-center text-sm">
+                    $$\left|H(e^{j\omega_c T_{\text{clk}}})\right|^2 = \frac{1}{2} \implies \cos(\omega_c T_{\text{clk}}) = 1 - \frac{\alpha^2}{2(1-\alpha)} = \frac{143}{144}$$
+                  </div>
+                  <div class="gold-card p-2 my-2 text-center">
+                    $$f_{c,\text{SC}} = \frac{10\text{ MHz}}{2\pi}\arccos\!\left(\frac{143}{144}\right) = \mathbf{187.675\text{ kHz}}$$
+                  </div>
+                </div>
+                <div class="space-y-2 text-xs">
+                  <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-sky-950">
+                    <strong class="text-amber-800">So sánh điểm cực:</strong> Mạch $RC$ liên tục có cực $p_{\text{RC}} = e^{-1/8} = \mathbf{0.8825}$ ($198.94\text{ kHz}$), còn SC thụ động có cực $p_{\text{SC}} = \mathbf{8/9 = 0.8889}$ gần $z=1$ hơn $\implies f_c$ giảm $-5.66\%$.
+                  </div>
+                  <div class="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-950">
+                    <strong class="text-sky-800">Định lý ổn định BIBO:</strong> Cực duy nhất $|z_p| = \frac{8}{9} &lt; 1$ nằm sâu trong vòng tròn đơn vị $\implies \sum |h[n]| &lt; \infty$.
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Hàm truyền $H(z)$ chỉ phụ thuộc tỷ số $C_2/C_1 = 8$ — vậy lý thuyết Tín hiệu Ngẫu nhiên nào quyết định giá trị tuyệt đối $C_1 = 100\text{ fF}, C_2 = 800\text{ fF}$ và chuẩn $\text{PM} \ge 60^\circ$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 07 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s8" data-notes="Nhiễu nhiệt kT/C quyết định cỡ tụ tuyệt đối C1=100 fF, C2=800 fF để đạt SNR &gt;= 71.9 dB và thắng tụ ký sinh dây. Đáp ứng bậc 2 vòng kín buộc PM &gt;= 60 độ để không rung vọt lố trong 47 ns.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II (Tầng 2 → Tầng 3) — Phổ Nhiễu $kT/C$ &amp; Động Học Vòng Kín Bậc 2</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Từ Băng Thông Nhiễu NEB &amp; Đáp Ứng Bậc 2 → Chốt $C_1, C_2$ &amp; $\text{PM} \ge 60^\circ$</h2>
+      </div>
+      <span class="badge-ocean">S&amp;S Spec Derivation #3 &amp; #4</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="fig-frame">
+              <img src="figs/week1_ss_ota_noise_bridge.png" alt="kT/C and 2nd order step" class="max-h-[325px] w-auto object-contain" />
+            </div>
+            <div class="grid grid-cols-2 gap-5">
+              <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                <div class="text-xs font-bold uppercase text-sky-800 mono">1. Tích phân PSD nhiễu qua $\text{NEB} = \frac{1}{4 R_{\text{on}} C}$</div>
+                <p class="text-xs text-sky-950 mt-1">
+                  $\overline{v_{n,\text{out}}^2} = \int_0^\infty 4k_B T R_{\text{on}}|H|^2 df \approx \frac{k_B T}{C_2}$ (độc lập $R_{\text{on}}$!). Chọn <strong>$C_1 = 100\text{ fF}, C_2 = 800\text{ fF}$</strong> cho $v_n = 72.0\ \mu\text{V}_{\text{rms}} \implies \mathbf{\text{SNR} = 71.9\text{ dB}}$ và ký sinh dây $&lt; 1.5\%$.
+                </p>
+              </div>
+              <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                <div class="text-xs font-bold uppercase text-amber-900 mono">2. Hệ bậc 2 vòng kín $\beta=1$: $\zeta = \frac{1}{2}\sqrt{f_{p2}/\text{GBW}}$</div>
+                <p class="text-xs text-sky-950 mt-1">
+                  Nếu $\text{PM} &lt; 45^\circ$, đáp ứng bước nhảy rung mạnh trong cửa sổ $47\text{ ns}$ làm sai mẫu. Bắt buộc <strong>$\text{PM} \ge 60^\circ \iff f_{p2} \ge \sqrt{3}\,\text{GBW}$</strong> để xác lập êm.
+                </p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Hãy đặt toàn bộ các định lý Tín hiệu &amp; Hệ thống cạnh bảng thông số phần cứng để nhìn trọn bức tranh ánh xạ Tầng 2 $\Longrightarrow$ Tầng 3.</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 08 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s9" data-notes="Mỗi con số của con chip đều xuất phát trực tiếp từ ràng buộc Tín hiệu &amp; Hệ thống ở cột trái, hoàn toàn không có thông số cảm tính.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi II Tổng Hợp — Cầu Nối Toàn Diện Tầng 2 ⟹ Tầng 3</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Ánh Xạ Nhân Quả: Từ Lý Thuyết Tín Hiệu &amp; Hệ Thống Sang Thông Số Chip</h2>
+      </div>
+      <span class="badge-gold">Zero Arbitrary Specs</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-xs">
+                <thead>
+                  <tr class="uppercase tracking-wider">
+                    <th class="py-2.5 px-3.5 text-left">Bài toán Tín hiệu &amp; Hệ thống (Tầng 2)</th>
+                    <th class="py-2.5 px-3.5 text-left">Phương trình / Ràng buộc Toán học</th>
+                    <th class="py-2.5 px-3.5 text-left">Thông số Chip Khóa Cứng (Tầng 3)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950 text-[12.5px]">
+                  <tr>
+                    <td class="py-2 px-3.5 font-semibold">Giữ $\le 50\text{ kHz}$ ($\le 0.5\text{ dB}$), cắt $2\text{ MHz}$ ($\ge 20\text{ dB}$)</td>
+                    <td class="py-2 px-3.5">$f_c \in [143.1, 201.0]\text{ kHz}$, Backward-Euler</td>
+                    <td class="py-2 px-3.5 font-bold text-sky-700">Lọc bậc $N=1$, $K = C_2/C_1 = 8$ ($f_{c,\text{SC}} = 187.67\text{ kHz}$)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-semibold">Chống chồng phổ (Aliasing) &amp; tránh méo góc $\Omega_c$</td>
+                    <td class="py-2 px-3.5">$\text{OSR} = \frac{f_{\text{clk}}}{2 f_c} \gg 1$, $\Omega_c = 0.118\text{ rad}$</td>
+                    <td class="py-2 px-3.5 font-bold text-amber-800">$f_{\text{clk}} = 10\text{ MHz}$ (Ảnh xa ở $9.81\text{ MHz}$, $T_{\text{clk}}=100\text{ ns}$)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-semibold">Sàn nhiễu gập phổ $\text{SNR} &gt; 70\text{ dB}$ ($\sim 11.6\text{ bit}$)</td>
+                    <td class="py-2 px-3.5">$\overline{v_{n,\text{out}}^2} = \frac{k_B T}{C_2}$, $C_1 \gg C_p$</td>
+                    <td class="py-2 px-3.5 font-bold text-sky-900">$C_1 = 100\text{ fF}, C_2 = 800\text{ fF}$ ($v_n = 72\ \mu\text{V}_{\text{rms}}$, mảng $3\times 3$)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-semibold">Không rò mẫu &amp; triệt sai số xác lập / méo THD</td>
+                    <td class="py-2 px-3.5">$\Phi_1\cdot\Phi_2 = 0$; $\epsilon_{\text{set}} = e^{-t_{\text{on}}/(R_{\text{on}}C_1)} \to 0$ ($94\tau$)</td>
+                    <td class="py-2 px-3.5 font-bold text-sky-700">$t_{\text{nov}} \in [2,5]\text{ ns}$, khóa TG $R_{\text{on}} &lt; 5\text{ k}\Omega$</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-semibold">Cách ly tải $C_L=1\text{ pF}$, sai số DC $&lt;1\%$, không rung</td>
+                    <td class="py-2 px-3.5">$\epsilon_A = \frac{1}{1+A_{OL}} &lt; 1\%$, $f_{p2} \ge \sqrt{3}\,\text{GBW}$</td>
+                    <td class="py-2 px-3.5 font-bold text-amber-800">5T-OTA ($\beta=1$): $A_{OL}&gt;40\text{ dB}, \text{GBW}&gt;10\text{ MHz}, \text{PM}\ge 60^\circ$</td>
+                  </tr>
+                  <tr class="row-gold">
+                    <td class="py-2 px-3.5 font-semibold">Tránh xén đỉnh (Clipping $\to \text{HD}_3$) trên nguồn đơn</td>
+                    <td class="py-2 px-3.5">$v_{\text{in}}(t) = V_{CM} \pm 0.42\text{ V} \subset [V_{\min}, V_{\max}]$</td>
+                    <td class="py-2 px-3.5 font-bold text-amber-900">$V_{DD} = 1.8\text{ V}, V_{SS} = 0\text{ V}, V_{CM} = 0.9\text{ V}$</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bộ thông số hệ thống đã được chứng minh trọn vẹn — bước vào Hồi III: hiện thực từng thông số này lên mặt phẳng Silicon Sky130A gặp thách thức gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 09 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s10" data-notes="Điện trở Poly trên Sky130A có độ trôi PVT từ -24.2% đến +36.0% (tổng 60.2%), phá vỡ cửa sổ [143.1, 201.0] kHz. Tụ chuyển mạch MIM tỷ số 1:8 giữ độ trôi PVT = 0.0% và gọn chỉ 450 um2.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III (Tầng 3) — Khối 3 (<span class="code-tag">sc_core</span>) Trên Wafer Sky130A</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Vì Sao Mạch $RC$ Phá Vỡ Cửa Sổ $f_c$ &amp; Giải Pháp Ô Tụ Đơn Vị MIM</h2>
+      </div>
+      <span class="badge-ocean">PVT Drift: 60.2% → 0.0%</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sky-950 text-sm">3 loại điện trở Poly trên <span class="code-tag-gold">sky130A</span></h3>
+                    <span class="badge-gold">Vi phạm S&amp;S</span>
+                  </div>
+                  <ul class="mt-1.5 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                    <li><span class="code-tag">res_generic_po</span> ($48.2\ \Omega/\square$): dài <strong>$7.26\text{ mm}$</strong>.</li>
+                    <li><span class="code-tag">res_high_po</span> ($357.9\ \Omega/\square$): dài <strong>$978\ \mu\text{m}$</strong>.</li>
+                    <li><span class="code-tag">res_xhigh_po</span> ($2.58\text{ k}\Omega/\square$): trôi $f_c$ từ $150.8\text{ kHz}$ (<span class="code-tag">hh</span>) lên <strong>$270.6\text{ kHz}$</strong> (<span class="code-tag">ll</span>, trượt chuẩn!).</li>
+                  </ul>
+                </div>
+
+                <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sky-950 text-sm">Ô tụ MIM chuẩn <span class="code-tag">cap_mim_m3_1</span></h3>
+                    <span class="badge-ocean">Khóa cứng $f_c$</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 my-1.5 text-center border border-sky-200 text-xs">
+                    $$C_{\text{unit}} = 2.0\frac{\text{fF}}{\mu\text{m}^2}(4.85+0.15)(9.85+0.15) = \mathbf{100.000\text{ fF}}$$
+                  </div>
+                  <ul class="space-y-1 text-xs text-sky-950 list-disc pl-4">
+                    <li>Chẵn bước lưới Magic $0.05\ \mu\text{m}$, tổng $9$ ô chỉ <strong>$450\ \mu\text{m}^2$</strong>.</li>
+                    <li>Tỷ số $1:8$ bất biến PVT ($\mathbf{0.0\%}$), mismatch cục bộ $&lt; 0.1\%$.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="col-span-7 fig-frame">
+                <img src="figs/week1_rc_vs_sc_pvt.png" alt="PVT Drift Comparison RC vs SC" class="max-h-[385px] w-auto object-contain" />
+                <p class="text-xs text-sky-800 mt-1 mono">Số liệu đo Ngspice-47 trên 7 góc công nghệ &amp; nhiệt độ của PDK sky130A</p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Mảng tụ $1:8$ đã có — làm sao điều khiển hai pha lấy mẫu và chia sẻ điện tích mà tuyệt đối không bao giờ nối tắt $V_{\text{in}}$ sang $C_2$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 10 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s11" data-notes="Sơ đồ sử dụng hai cổng NAND2 chốt chéo kết hợp chuỗi NOT kênh dài L=0.95 um để ấn định khoảng chết t_nov = 2-3 ns giữa Phi1 và Phi2, loại bỏ tuyệt đối dòng rò nối tắt Vin -&gt; C2.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III (Tầng 3) — Khối 1 (<span class="code-tag">non_overlap_clk</span>)</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Xung Hai Pha Không Chồng Lấn: Bảo Vệ Định Luật Bảo Toàn Điện Tích</h2>
+      </div>
+      <span class="badge-ocean">$t_{\text{nov}} \in [2\text{ ns}, 5\text{ ns}]$</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-7 ieee-card py-2.5 px-3.5 flex flex-col justify-between">
+                <div class="text-xs font-bold uppercase text-sky-800 mono mb-1">Chốt Chéo NAND2 + Chuỗi NOT Chuẩn IEEE &amp; Giản Đồ Thời Gian ($T_{\text{clk}} = 100\text{ ns}$)</div>
+                
+    <svg viewBox="0 0 640 278" class="w-full h-[256px]">
+      
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+      <text x="320" y="14" text-anchor="middle" font-size="11" font-weight="800" fill="#0369A1">
+        Kiến trúc Chốt Chéo NAND2 + Chuỗi Trễ NOT Chuẩn IEEE (Break-Before-Make)
+      </text>
+
+      <!-- Input CLK & XINV0 -->
+      <text x="16" y="88" font-size="11" font-weight="800" fill="#0C4A6E">CLK</text>
+      <line x1="42" y1="84" x2="72" y2="84" stroke="#0284C7" stroke-width="2" />
+      <circle cx="56" cy="84" r="3" fill="#0369A1" />
+      <path d="M 56 84 L 56 36 L 146 36" fill="none" stroke="#0284C7" stroke-width="1.8" />
+      
+    <g>
+      <line x1="71.2" y1="84" x2="77.7" y2="84" stroke="#0284C7" stroke-width="2" />
+      <polygon points="77.7,73.6 77.7,94.4 98.5,84" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="101.62" cy="84" r="3.12" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="104.74000000000001" y1="84" x2="112.8" y2="84" stroke="#0284C7" stroke-width="2" />
+      <text x="86.15" y="86.275" text-anchor="middle" font-size="6.2" font-weight="800" fill="#0C4A6E">NOT</text><text x="92" y="70.35" text-anchor="middle" font-size="6.5" font-weight="700" fill="#0369A1">XINV0</text>
+    </g>
+    
+      <line x1="120" y1="84" x2="146" y2="84" stroke="#0284C7" stroke-width="1.8" />
+
+      <!-- Cross-coupled NAND2 gates -->
+      
+    <g>
+      <line x1="146.64" y1="38.8" x2="155.28" y2="38.8" stroke="#0284C7" stroke-width="2" />
+      <line x1="146.64" y1="53.2" x2="155.28" y2="53.2" stroke="#0284C7" stroke-width="2" />
+      <path d="M 155.28 31.6 L 172.56 31.6 A 14.399999999999999 14.399999999999999 0 0 1 172.56 60.4 L 155.28 60.4 Z" fill="#F0F9FF" stroke="#0369A1" stroke-width="2.2" />
+      <circle cx="190.416" cy="46" r="3.456" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="193.87199999999999" y1="46" x2="202.512" y2="46" stroke="#0284C7" stroke-width="2" />
+      <text x="170.4" y="48.52" text-anchor="middle" font-size="6.8" font-weight="800" fill="#0C4A6E">NAND2</text><text x="174" y="27.28" text-anchor="middle" font-size="7.6" font-weight="800" fill="#0369A1">XNAND_A</text>
+    </g>
+    
+      
+    <g>
+      <line x1="146.64" y1="86.8" x2="155.28" y2="86.8" stroke="#0284C7" stroke-width="2" />
+      <line x1="146.64" y1="101.2" x2="155.28" y2="101.2" stroke="#0284C7" stroke-width="2" />
+      <path d="M 155.28 79.6 L 172.56 79.6 A 14.399999999999999 14.399999999999999 0 0 1 172.56 108.4 L 155.28 108.4 Z" fill="#F0F9FF" stroke="#0369A1" stroke-width="2.2" />
+      <circle cx="190.416" cy="94" r="3.456" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="193.87199999999999" y1="94" x2="202.512" y2="94" stroke="#0284C7" stroke-width="2" />
+      <text x="170.4" y="96.52" text-anchor="middle" font-size="6.8" font-weight="800" fill="#0C4A6E">NAND2</text><text x="174" y="75.28" text-anchor="middle" font-size="7.6" font-weight="800" fill="#0369A1">XNAND_B</text>
+    </g>
+    
+
+      <!-- Feedback wires between branches -->
+      <line x1="210" y1="46" x2="236" y2="46" stroke="#0284C7" stroke-width="1.8" />
+      <line x1="210" y1="94" x2="236" y2="94" stroke="#0284C7" stroke-width="1.8" />
+
+      <!-- 6-stage delay chains shown cleanly as NOT -> [4x NOT] -> NOT -->
+      
+    <g>
+      <line x1="239.44" y1="46" x2="245.24" y2="46" stroke="#0284C7" stroke-width="2" />
+      <polygon points="245.24,36.72 245.24,55.28 263.8,46" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="266.584" cy="46" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="269.368" y1="46" x2="276.56" y2="46" stroke="#0284C7" stroke-width="2" />
+      <text x="258" y="33.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">DA1</text>
+    </g>
+    
+      <rect x="290" y="32" width="66" height="28" rx="6" fill="#FFFBEB" stroke="#D97706" stroke-width="1.6" />
+      <text x="323" y="43" text-anchor="middle" font-size="8.8" font-weight="800" fill="#B45309">4× NOT</text>
+      <text x="323" y="55" text-anchor="middle" font-size="8.2" font-weight="700" fill="#78350F">L = 0.95 µm</text>
+      <line x1="278" y1="46" x2="290" y2="46" stroke="#0284C7" stroke-width="1.8" />
+      <line x1="356" y1="46" x2="368" y2="46" stroke="#0284C7" stroke-width="1.8" />
+      
+    <g>
+      <line x1="371.44" y1="46" x2="377.24" y2="46" stroke="#0284C7" stroke-width="2" />
+      <polygon points="377.24,36.72 377.24,55.28 395.8,46" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="398.584" cy="46" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="401.368" y1="46" x2="408.56" y2="46" stroke="#0284C7" stroke-width="2" />
+      <text x="390" y="33.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">DA6</text>
+    </g>
+    
+
+      
+    <g>
+      <line x1="239.44" y1="94" x2="245.24" y2="94" stroke="#0284C7" stroke-width="2" />
+      <polygon points="245.24,84.72 245.24,103.28 263.8,94" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="266.584" cy="94" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="269.368" y1="94" x2="276.56" y2="94" stroke="#0284C7" stroke-width="2" />
+      <text x="258" y="81.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">DB1</text>
+    </g>
+    
+      <rect x="290" y="80" width="66" height="28" rx="6" fill="#FFFBEB" stroke="#D97706" stroke-width="1.6" />
+      <text x="323" y="91" text-anchor="middle" font-size="8.8" font-weight="800" fill="#B45309">4× NOT</text>
+      <text x="323" y="103" text-anchor="middle" font-size="8.2" font-weight="700" fill="#78350F">L = 0.95 µm</text>
+      <line x1="278" y1="94" x2="290" y2="94" stroke="#0284C7" stroke-width="1.8" />
+      <line x1="356" y1="94" x2="368" y2="94" stroke="#0284C7" stroke-width="1.8" />
+      
+    <g>
+      <line x1="371.44" y1="94" x2="377.24" y2="94" stroke="#0284C7" stroke-width="2" />
+      <polygon points="377.24,84.72 377.24,103.28 395.8,94" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="398.584" cy="94" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="401.368" y1="94" x2="408.56" y2="94" stroke="#0284C7" stroke-width="2" />
+      <text x="390" y="81.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">DB6</text>
+    </g>
+    
+
+      <!-- Cross feedback taps -->
+      <circle cx="422" cy="46" r="3" fill="#D97706" />
+      <path d="M 422 46 L 422 65 L 136 65 L 136 86 L 146 86" fill="none" stroke="#D97706" stroke-width="1.5" stroke-dasharray="4,2" />
+      <circle cx="430" cy="94" r="3" fill="#0369A1" />
+      <path d="M 430 94 L 430 73 L 142 73 L 142 54 L 146 54" fill="none" stroke="#0369A1" stroke-width="1.5" stroke-dasharray="4,2" />
+
+      <!-- Complementary output buffers -->
+      <line x1="414" y1="46" x2="454" y2="46" stroke="#0284C7" stroke-width="1.8" />
+      
+    <g>
+      <line x1="457.44" y1="46" x2="463.24" y2="46" stroke="#0284C7" stroke-width="2" />
+      <polygon points="463.24,36.72 463.24,55.28 481.8,46" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="484.584" cy="46" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="487.368" y1="46" x2="494.56" y2="46" stroke="#0284C7" stroke-width="2" />
+      <text x="476" y="33.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">BUF1A</text>
+    </g>
+    
+      <circle cx="510" cy="46" r="2.8" fill="#0369A1" />
+      <path d="M 510 46 L 510 24 L 584 24" fill="none" stroke="#0369A1" stroke-width="1.8" />
+      <text x="590" y="28" font-size="10.5" font-weight="800" fill="#0369A1">Φ₁</text>
+      
+    <g>
+      <line x1="523.44" y1="46" x2="529.24" y2="46" stroke="#0284C7" stroke-width="2" />
+      <polygon points="529.24,36.72 529.24,55.28 547.8,46" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="550.584" cy="46" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="553.3679999999999" y1="46" x2="560.56" y2="46" stroke="#0284C7" stroke-width="2" />
+      <text x="542" y="33.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">BUF1B</text>
+    </g>
+    
+      <text x="590" y="50" font-size="10.5" font-weight="800" fill="#0284C7">Φ₁_b</text>
+
+      <line x1="414" y1="94" x2="454" y2="94" stroke="#0284C7" stroke-width="1.8" />
+      
+    <g>
+      <line x1="457.44" y1="94" x2="463.24" y2="94" stroke="#0284C7" stroke-width="2" />
+      <polygon points="463.24,84.72 463.24,103.28 481.8,94" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="484.584" cy="94" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="487.368" y1="94" x2="494.56" y2="94" stroke="#0284C7" stroke-width="2" />
+      <text x="476" y="81.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">BUF2A</text>
+    </g>
+    
+      <circle cx="510" cy="94" r="2.8" fill="#D97706" />
+      <path d="M 510 94 L 510 116 L 584 116" fill="none" stroke="#D97706" stroke-width="1.8" />
+      <text x="590" y="120" font-size="10.5" font-weight="800" fill="#B45309">Φ₂</text>
+      
+    <g>
+      <line x1="523.44" y1="94" x2="529.24" y2="94" stroke="#0284C7" stroke-width="2" />
+      <polygon points="529.24,84.72 529.24,103.28 547.8,94" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="550.584" cy="94" r="2.784" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="553.3679999999999" y1="94" x2="560.56" y2="94" stroke="#0284C7" stroke-width="2" />
+      <text x="542" y="81.82" text-anchor="middle" font-size="5.8" font-weight="700" fill="#0369A1">BUF2B</text>
+    </g>
+    
+      <text x="590" y="98" font-size="10.5" font-weight="800" fill="#D97706">Φ₂_b</text>
+
+      <!-- Timing Waveform below -->
+      <line x1="36" y1="132" x2="616" y2="132" stroke="#BAE6FD" stroke-width="1.2" />
+      <text x="48" y="168" text-anchor="end" font-size="12" font-weight="800" fill="#0369A1">Φ₁</text>
+      <path d="M 60 182 L 84 182 L 92 144 L 296 144 L 304 182 L 560 182 L 568 144 L 604 144" fill="none" stroke="#0369A1" stroke-width="2.6" />
+      <rect x="92" y="144" width="204" height="38" fill="#E0F2FE" opacity="0.6" />
+      <text x="194" y="167" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0369A1">t_on ≈ 47 ns (Nạp C₁)</text>
+
+      <text x="48" y="230" text-anchor="end" font-size="12" font-weight="800" fill="#D97706">Φ₂</text>
+      <path d="M 60 244 L 330 244 L 338 206 L 534 206 L 542 244 L 604 244" fill="none" stroke="#D97706" stroke-width="2.6" />
+      <rect x="338" y="206" width="196" height="38" fill="#FEF3C7" opacity="0.7" />
+      <text x="436" y="229" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">t_on ≈ 47 ns (Chia sẻ C₁∥C₂)</text>
+
+      <rect x="304" y="140" width="34" height="110" fill="#FEF3C7" opacity="0.75" />
+      <line x1="304" y1="138" x2="304" y2="254" stroke="#D97706" stroke-width="1.5" stroke-dasharray="4,2" />
+      <line x1="338" y1="138" x2="338" y2="254" stroke="#D97706" stroke-width="1.5" stroke-dasharray="4,2" />
+      <text x="321" y="268" text-anchor="middle" font-size="11" font-weight="800" fill="#B45309">Khoảng chết t_nov = 2–3 ns (Cả TG1 &amp; TG2 đều TẮT)</text>
+    </svg>
+    
+              </div>
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">1. Cận dưới $t_{\text{nov}} \ge 2\text{ ns}$</div>
+                  <p class="text-sm text-sky-950 mt-1">Đảm bảo <span class="code-tag">TG1</span> khóa hẳn ($V_{GS} = 0$) trước khi <span class="code-tag">TG2</span> dẫn qua mọi góc nhanh/chậm PVT, giữ $\Phi_1 \cdot \Phi_2 \approx 0$.</p>
+                </div>
+                <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">2. Cận trên $t_{\text{nov}} \le 5\text{ ns}$</div>
+                  <p class="text-sm text-sky-950 mt-1">Không ăn lẹm quá $10\%$ bán chu kỳ $50\text{ ns}$, bảo toàn cửa sổ dẫn <strong>$t_{\text{on}} \ge 45\text{–}47\text{ ns}$</strong> cho tụ và OTA xác lập.</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-blue-600 py-2.5">
+                  <div class="text-xs font-bold uppercase text-blue-700 mono">3. Đồng bộ 4 pha ($\Phi, \overline{\Phi}$)</div>
+                  <p class="text-sm text-sky-950 mt-1">Cân bằng sườn lên/xuống giữa $\Phi_1$ và $\overline{\Phi_1}$ giúp NMOS và PMOS tắt đồng thời, tối ưu triệt <em>Clock Feedthrough</em>.</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Trong cửa sổ hữu ích $t_{\text{on}} = 47\text{ ns}$ đó, khóa truyền dẫn CMOS <span class="code-tag">tg_switch</span> phải có nội trở bao nhiêu để không làm méo hàm truyền $H(z)$?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 11 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s12" data-notes="Hiệu ứng cực nền đẩy ngưỡng NMOS lên 0.866V và PMOS lên 0.938V quanh VCM=0.9V, tạo đỉnh Ron hình chuông. Ép Ron &lt; 5 kOhm đạt 94 tau giúp xóa sạch méo hài động khi bám mẫu.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III (Tầng 3) — Khối 2 (<span class="code-tag">tg_switch</span>) &amp; Méo Hài Động</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Tại Sao Phải Ép $R_{\text{on}} &lt; 5\text{ k}\Omega$ ($94\tau$) Thay Vì $68\text{ k}\Omega$?</h2>
+      </div>
+      <span class="badge-ocean">Settling &amp; THD Immunity</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">1. Bẫy phi tuyến $R_{\text{on}}(V_{\text{in}}) \to \text{THD}$</div>
+                  <p class="text-xs text-sky-950 mt-1">Nạp $99.9\%$ chỉ cần $R_{\text{on}} &lt; 68\text{ k}\Omega$ ($6.9\tau$). Nhưng do $R_{\text{on}}(V_{\text{in}})$ biến thiên mạnh theo tín hiệu, nếu $\tau$ lớn sẽ gây <strong>méo hài động $\text{HD}_2, \text{HD}_3$</strong>!</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-blue-600 py-2.5">
+                  <div class="text-xs font-bold uppercase text-blue-700 mono">2. Đỉnh Body Effect trên <span class="code-tag">sky130A</span></div>
+                  <p class="text-xs text-sky-950 mt-1">Tại $V_{CM}=0.9\text{ V}$ ($V_{SB}=0.9\text{ V}$), $V_{TH,n}$ tăng từ $0.74\text{ V} \to \mathbf{0.866\text{ V}}$ và $|V_{TH,p}| = \mathbf{0.938\text{ V}}$, tạo đỉnh nội trở tại $V_{\text{in}} \approx 0.965\text{ V}$.</p>
+                </div>
+                <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">3. Chốt $W_n/W_p = 4/12\ \mu\text{m}$ ($L = 0.15\ \mu\text{m}$)</div>
+                  <p class="text-xs text-sky-950 mt-1">Tỷ lệ $W_p/W_n = 3$ bù $\mu_n/\mu_p \approx 2.7$: đạt $R_{\text{on,max}} = \mathbf{2.26\text{ k}\Omega}$ (góc <span class="code-tag">ss</span>: $4.53\text{ k}\Omega &lt; 5\text{ k}\Omega$), nạp đủ <strong>$94\tau$</strong> ($e^{-94} \approx 0$)!</p>
+                </div>
+              </div>
+              <div class="col-span-7 fig-frame">
+                <img src="figs/week1_tg_ron.png" alt="Sky130A TG Ron Sweep" class="max-h-[385px] w-auto object-contain" />
+                <p class="text-xs text-sky-800 mt-1 mono">Quét DC Ngspice-47 trên dải tín hiệu $0.9 \pm 0.4\text{ V}$ (vùng tô xanh)</p>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Tại sao không tăng vọt khóa TG lên $20/60\ \mu\text{m}$ cho $R_{\text{on}}$ càng nhỏ hơn nữa? Vì các tụ ký sinh Planar CMOS sẽ trừng phạt ta ngay lập tức!</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 12 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s13" data-notes="Nếu làm khóa TG quá to, tụ tiếp giáp Cdb, Qch và Cov tăng vọt gây sai lệch tỷ số tụ và méo hài. Khóa CMOS 2/6 hoặc 4/12 giữ hai gai xuyên xung ngược pha tự triệt &gt;90%.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III (Tầng 3) — Giới Hạn Vật Lý Bán Dẫn Planar 130nm</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">6 Tụ Ký Sinh, Charge Injection &amp; Cơ Chế Tự Triệt Clock Feedthrough</h2>
+      </div>
+      <span class="badge-gold">BSIM4 Parasitic Audit</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-3 gap-4">
+              <div class="ieee-card border-t-4 border-t-sky-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-700 mono">1. 6 Tụ Ký Sinh MOSFET</span>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$C_{ox,n} = 8.33\ \frac{\text{fF}}{\mu\text{m}^2}, \quad C_{ox,p} = 8.16\ \frac{\text{fF}}{\mu\text{m}^2}$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li><strong>Cổng ($C_{gs}, C_{gd}, C_{gb}$):</strong> Ghép xung nhịp và nhân Miller.</li>
+                    <li><strong>Tiếp giáp P–N ($C_{sb}, C_{db}, C_{\text{sub}}$):</strong> Biến thiên phi tuyến theo $V_{\text{in}}$, gây méo nếu $W$ quá lớn.</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded bg-sky-50 border border-sky-200 text-xs text-sky-900">
+                  <strong>Hướng Tuần 4:</strong> Chia ngón (<span class="code-tag">nf ≥ 2</span>) giảm $\sim 45\%$ $A_D, P_D$.
+                </div>
+              </div>
+
+              <div class="gold-card border-t-4 border-t-amber-500 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">2. Channel Charge Injection</span>
+                  <div class="bg-white border border-amber-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$\Delta V_{\text{CI}} = -\frac{Q_{\text{ch},n} - |Q_{\text{ch},p}|}{2 C_{\text{hold}}}$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Kênh dẫn xả $Q_{\text{ch}} = W L C_{ox}(V_{GS}-V_{TH})$ khi tắt.</li>
+                    <li>Tại $V_{CM}=0.9\text{ V}$ (<span class="code-tag">TG 2/6</span>): $V_{ov,n} = 34\text{ mV}$ rất nhỏ $\implies \Delta V_{\text{CI}} = \mathbf{0.43\text{ mV}}$ trên $C_1$ ($\mathbf{0.05\text{ mV}}$ trên $C_2$).</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded bg-white border border-amber-300 text-xs text-amber-900">
+                  <strong>Hướng Tuần 3:</strong> Bổ sung <strong>Dummy Switch $W/2$</strong> hấp thụ điện tích dư.
+                </div>
+              </div>
+
+              <div class="ocean-card border-t-4 border-t-blue-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-blue-700 mono">3. Clock Feedthrough</span>
+                  <div class="bg-white border border-sky-200 rounded-lg p-2 my-2 text-center text-xs">
+                    $$\Delta V_{\text{CF}} = \pm V_{DD}\frac{W C_{ov}}{W C_{ov} + C_{\text{hold}}}$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>Đo BSIM4: $C_{ov,n} = 0.493\text{ fF}$, $C_{ov,p} = 0.444\text{ fF}$.</li>
+                    <li>Đơn lẻ trên $C_1$: $-8.82\text{ mV}$ và $+7.96\text{ mV}$.</li>
+                    <li>Hai xung đảo $\Phi, \overline{\Phi}$: tự triệt <strong>$&gt;90\%$</strong>, còn $\mathbf{-0.87\text{ mV}}$!</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded bg-white border border-sky-300 text-xs text-sky-900">
+                  <strong>Trên $C_2 = 800\text{ fF}$:</strong> Sụt áp ròng chỉ còn <strong>$-0.108\text{ mV}$</strong>.
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Lõi đóng ngắt và mảng tụ đã được bảo vệ — tiếp theo, hiện thực bộ đệm 5T-OTA trên nguồn thấp $1.8\text{ V}$ gặp thách thức quỹ áp gì?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 13 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s14" data-notes="Sơ đồ 5T-OTA với cặp PMOS M3/M4 (có vòng tròn đảo cổng) và 3 NMOS M1/M2/M5 chuẩn IEEE. Phát hiện quan trọng của Tuần 1: |Vth,p| cao trên sky130A đòi hỏi thiết kế M1/M2 ở nghịch đảo trung bình tại Tuần 2.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi III (Tầng 3) — Khối 4 (<span class="code-tag">ota_5t</span>) &amp; Phát Hiện Quỹ Áp BSIM4</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Cấu Trúc 5T-OTA: Độ Lợi $A_{OL}$, Hỗ Dẫn $g_m$ &amp; Bài Toán Quỹ Áp ICMR</h2>
+      </div>
+      <span class="badge-ocean">Target: $A_{OL}&gt;40\text{ dB}, \text{PM}\ge 60^\circ$</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-5 ieee-card flex flex-col items-center justify-center py-2">
+                
+    <svg viewBox="0 0 380 288" class="w-full h-[250px]">
+      <!-- VDD Rail -->
+      <line x1="55" y1="20" x2="310" y2="20" stroke="#D97706" stroke-width="2.8" />
+      <text x="182" y="13" text-anchor="middle" font-size="11.5" font-weight="800" fill="#B45309">VDD = 1.8 V</text>
+      <line x1="115" y1="20" x2="115" y2="38" stroke="#78350F" stroke-width="2" />
+      <line x1="255" y1="20" x2="255" y2="38" stroke="#78350F" stroke-width="2" />
+
+      <!-- M3 (left, flipped so gate faces right) and M4 (right, gate faces left) -->
+      
+    <g>
+      <line x1="149" y1="64" x2="142" y2="64" stroke="#D97706" stroke-width="2" />
+      <circle cx="138" cy="64" r="4.2" fill="#FFFBEB" stroke="#D97706" stroke-width="2" />
+      <line x1="133" y1="50" x2="133" y2="78" stroke="#B45309" stroke-width="2.4" />
+      <line x1="127" y1="48" x2="127" y2="57" stroke="#78350F" stroke-width="2.2" />
+      <line x1="127" y1="60" x2="127" y2="68" stroke="#78350F" stroke-width="2.2" />
+      <line x1="127" y1="71" x2="127" y2="80" stroke="#78350F" stroke-width="2.2" />
+      <line x1="127" y1="52" x2="115" y2="52" stroke="#78350F" stroke-width="2" />
+      <line x1="115" y1="38" x2="115" y2="52" stroke="#78350F" stroke-width="2" />
+      <line x1="127" y1="76" x2="115" y2="76" stroke="#78350F" stroke-width="2" />
+      <line x1="115" y1="76" x2="115" y2="90" stroke="#78350F" stroke-width="2" />
+      <line x1="127" y1="64" x2="115" y2="64" stroke="#D97706" stroke-width="1.4" />
+      <polygon points="115,52 121,49 121,55" fill="#D97706" />
+      <text x="109" y="54" text-anchor="end" font-size="11.5" font-weight="800" fill="#B45309">M3</text><text x="109" y="70" text-anchor="end" font-size="9.5" font-weight="600" fill="#78350F">16/0.8</text>
+    </g>
+    
+      
+    <g>
+      <line x1="221" y1="64" x2="228" y2="64" stroke="#D97706" stroke-width="2" />
+      <circle cx="232" cy="64" r="4.2" fill="#FFFBEB" stroke="#D97706" stroke-width="2" />
+      <line x1="237" y1="50" x2="237" y2="78" stroke="#B45309" stroke-width="2.4" />
+      <line x1="243" y1="48" x2="243" y2="57" stroke="#78350F" stroke-width="2.2" />
+      <line x1="243" y1="60" x2="243" y2="68" stroke="#78350F" stroke-width="2.2" />
+      <line x1="243" y1="71" x2="243" y2="80" stroke="#78350F" stroke-width="2.2" />
+      <line x1="243" y1="52" x2="255" y2="52" stroke="#78350F" stroke-width="2" />
+      <line x1="255" y1="38" x2="255" y2="52" stroke="#78350F" stroke-width="2" />
+      <line x1="243" y1="76" x2="255" y2="76" stroke="#78350F" stroke-width="2" />
+      <line x1="255" y1="76" x2="255" y2="90" stroke="#78350F" stroke-width="2" />
+      <line x1="243" y1="64" x2="255" y2="64" stroke="#D97706" stroke-width="1.4" />
+      <polygon points="255,52 249,49 249,55" fill="#D97706" />
+      <text x="261" y="54" text-anchor="start" font-size="11.5" font-weight="800" fill="#B45309">M4</text><text x="261" y="70" text-anchor="start" font-size="9.5" font-weight="600" fill="#78350F">16/0.8</text>
+    </g>
+    
+      <!-- Mirror gate tie & M3 diode tie -->
+      <line x1="149" y1="64" x2="221" y2="64" stroke="#D97706" stroke-width="2" />
+      <circle cx="170" cy="64" r="3.2" fill="#D97706" />
+      <line x1="170" y1="64" x2="170" y2="100" stroke="#D97706" stroke-width="1.8" />
+      <line x1="115" y1="100" x2="170" y2="100" stroke="#D97706" stroke-width="1.8" />
+      <circle cx="115" cy="100" r="3.2" fill="#0C4A6E" />
+
+      <!-- Vertical links M3->M1 and M4->M2 -->
+      <line x1="115" y1="90" x2="115" y2="124" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="255" y1="90" x2="255" y2="124" stroke="#0C4A6E" stroke-width="2" />
+      <!-- Output VOUT -->
+      <circle cx="255" cy="107" r="4" fill="#0284C7" />
+      <line x1="255" y1="107" x2="332" y2="107" stroke="#0284C7" stroke-width="2.4" />
+      <text x="336" y="111" font-size="11.5" font-weight="800" fill="#0369A1">Vout</text>
+
+      <!-- Differential pair M1 (gate left) and M2 (gate right) -->
+      
+    <g>
+      <line x1="83" y1="150" x2="97" y2="150" stroke="#0284C7" stroke-width="2" />
+      <line x1="97" y1="136" x2="97" y2="164" stroke="#0369A1" stroke-width="2.4" />
+      <line x1="103" y1="134" x2="103" y2="143" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="103" y1="146" x2="103" y2="154" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="103" y1="157" x2="103" y2="166" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="103" y1="138" x2="115" y2="138" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="115" y1="124" x2="115" y2="138" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="103" y1="162" x2="115" y2="162" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="115" y1="162" x2="115" y2="176" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="103" y1="150" x2="115" y2="150" stroke="#0284C7" stroke-width="1.4" />
+      <polygon points="103,162 109,159 109,165" fill="#0369A1" /><text x="121" y="140" text-anchor="start" font-size="11.5" font-weight="800" fill="#0369A1">M1</text><text x="121" y="156" text-anchor="start" font-size="9.5" font-weight="600" fill="#475569">32/0.8</text>
+    </g>
+    
+      
+    <g>
+      <line x1="287" y1="150" x2="273" y2="150" stroke="#0284C7" stroke-width="2" />
+      <line x1="273" y1="136" x2="273" y2="164" stroke="#0369A1" stroke-width="2.4" />
+      <line x1="267" y1="134" x2="267" y2="143" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="267" y1="146" x2="267" y2="154" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="267" y1="157" x2="267" y2="166" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="267" y1="138" x2="255" y2="138" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="255" y1="124" x2="255" y2="138" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="267" y1="162" x2="255" y2="162" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="255" y1="162" x2="255" y2="176" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="267" y1="150" x2="255" y2="150" stroke="#0284C7" stroke-width="1.4" />
+      <polygon points="267,162 261,159 261,165" fill="#0369A1" /><text x="249" y="140" text-anchor="end" font-size="11.5" font-weight="800" fill="#0369A1">M2</text><text x="249" y="156" text-anchor="end" font-size="9.5" font-weight="600" fill="#475569">32/0.8</text>
+    </g>
+    
+      <line x1="56" y1="150" x2="83" y2="150" stroke="#0284C7" stroke-width="2" />
+      <text x="52" y="154" text-anchor="end" font-size="11" font-weight="800" fill="#0369A1">Vx (+)</text>
+      <line x1="287" y1="150" x2="322" y2="150" stroke="#0284C7" stroke-width="2" />
+      <text x="326" y="154" font-size="11" font-weight="800" fill="#0369A1">Vout (−)</text>
+
+      <!-- Common Tail VTAIL -->
+      <line x1="115" y1="176" x2="115" y2="196" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="255" y1="176" x2="255" y2="196" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="115" y1="196" x2="255" y2="196" stroke="#0C4A6E" stroke-width="2" />
+      <circle cx="185" cy="196" r="3.5" fill="#0C4A6E" />
+      <text x="200" y="191" font-size="10" font-weight="700" fill="#0369A1">Vtail</text>
+
+      <!-- Tail NMOS M5 -->
+      <line x1="185" y1="196" x2="185" y2="210" stroke="#0C4A6E" stroke-width="2" />
+      
+    <g>
+      <line x1="153" y1="236" x2="167" y2="236" stroke="#0284C7" stroke-width="2" />
+      <line x1="167" y1="222" x2="167" y2="250" stroke="#0369A1" stroke-width="2.4" />
+      <line x1="173" y1="220" x2="173" y2="229" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="173" y1="232" x2="173" y2="240" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="173" y1="243" x2="173" y2="252" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="173" y1="224" x2="185" y2="224" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="185" y1="210" x2="185" y2="224" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="173" y1="248" x2="185" y2="248" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="185" y1="248" x2="185" y2="262" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="173" y1="236" x2="185" y2="236" stroke="#0284C7" stroke-width="1.4" />
+      <polygon points="173,248 179,245 179,251" fill="#0369A1" /><text x="191" y="226" text-anchor="start" font-size="11.5" font-weight="800" fill="#0369A1">M5</text><text x="191" y="242" text-anchor="start" font-size="9.5" font-weight="600" fill="#475569">24/1.0</text>
+    </g>
+    
+      <line x1="118" y1="236" x2="153" y2="236" stroke="#0284C7" stroke-width="2" />
+      <text x="112" y="240" text-anchor="end" font-size="11" font-weight="800" fill="#0369A1">Vbias</text>
+
+      <!-- VSS Ground -->
+      <line x1="185" y1="262" x2="185" y2="274" stroke="#0C4A6E" stroke-width="2" />
+      <line x1="166" y1="274" x2="204" y2="274" stroke="#0C4A6E" stroke-width="2.5" />
+      <text x="185" y="286" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0C4A6E">VSS = 0 V</text>
+    </svg>
+    
+                <p class="text-xs text-sky-800 font-semibold mono mt-1">5T-OTA hồi tiếp đơn vị ($V_{\text{in}-} = V_{\text{out}}$)</p>
+              </div>
+              <div class="col-span-7 flex flex-col gap-3 justify-center">
+                <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">1. Độ lợi vòng hở &amp; Sai số truyền đạt tĩnh ($\beta = 1$)</span>
+                  <div class="bg-white border border-sky-200 rounded p-1.5 my-1 text-center text-xs">
+                    $$A_{OL} = g_{m1,2}(r_{o2}\parallel r_{o4}) = \frac{2}{(\lambda_n+\lambda_p)V_{ov1}} \ge 100\text{ V/V}\ (40\text{ dB}) \implies \epsilon_A \le \mathbf{0.99\%}$$
+                  </div>
+                  <p class="text-xs text-sky-950">Cần chọn chiều dài kênh $L_{1..4} \ge 0.5\text{–}1.0\ \mu\text{m}$ để giảm hệ số điều biến chiều dài kênh $\lambda$.</p>
+                </div>
+                <div class="ieee-card border-l-4 border-l-blue-600 py-2.5">
+                  <span class="text-xs font-bold uppercase text-blue-700 mono">2. Điều kiện băng thông &amp; hỗ dẫn ($C_L = 1\text{ pF}$)</span>
+                  <p class="text-xs text-sky-950 mt-1">$\text{GBW} = \frac{g_{m1,2}}{2\pi C_L} &gt; 10\text{ MHz} \implies g_{m1,2} &gt; \mathbf{62.8\ \mu\text{S}}$ và cực gương dòng $f_{p2} = \frac{g_{m3}}{2\pi C_X} &gt; \mathbf{17.3\text{ MHz}}$.</p>
+                </div>
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">3. Phát hiện Quỹ áp ICMR trên Sky130A ($|V_{TH,p}| \approx 0.98\text{ V}$)</span>
+                  <p class="text-xs text-sky-950 mt-1">$V_{\text{in,cm}} \in [V_{GS1} + V_{dsat5},\ V_{DD} - V_{SG3} + V_{TH1}]$. Để biên dưới $\le 0.50\text{ V}$ cần mở rộng $(W/L)_{1,2}$ (vào nghịch đảo trung bình, hạ $V_{GS1}$) ở Tuần 2!</p>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bốn khối phần cứng đã được mổ xẻ tường tận — bây giờ bước sang Hồi IV: ghép chúng thành sản phẩm hoàn chỉnh và xem INPUT / OUTPUT thực tế!</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 14 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s15" data-notes="Sơ đồ hợp nhất 4 khối chức năng theo đúng ký hiệu chuẩn IEEE: Khối xung clock, cặp khóa CMOS TG1/TG2 điều khiển ngược pha, tụ MIM 1:8 và bộ đệm tam giác 5T-OTA hồi tiếp âm đơn vị.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Kiến Trúc Sản Phẩm Hoàn Chỉnh</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Hợp Nhất 4 Khối Chức Năng Toàn Chip (<span class="code-tag">top_sc_lpf</span>)</h2>
+      </div>
+      <span class="badge-ocean">Architecture Sign-Off</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="ieee-card py-3 px-5">
+              
+    <svg viewBox="0 0 1100 282" class="w-full h-[258px]">
+      
+    <defs>
+      <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+      </marker>
+      <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+      </marker>
+      <marker id="arr-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#0C4A6E" />
+      </marker>
+    </defs>
+    
+      <!-- Block 1: Clock Generator Box with mini NAND2/NOT icons -->
+      <rect x="20" y="12" width="265" height="96" rx="12" fill="#F0F9FF" stroke="#0284C7" stroke-width="2.2" />
+      <text x="152" y="34" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0369A1">1. non_overlap_clk (10 MHz)</text>
+      
+    <g>
+      <line x1="77.52" y1="57.4" x2="83.03999999999999" y2="57.4" stroke="#0284C7" stroke-width="2" />
+      <line x1="77.52" y1="66.6" x2="83.03999999999999" y2="66.6" stroke="#0284C7" stroke-width="2" />
+      <path d="M 83.03999999999999 52.8 L 94.08 52.8 A 9.200000000000001 9.200000000000001 0 0 1 94.08 71.2 L 83.03999999999999 71.2 Z" fill="#F0F9FF" stroke="#0369A1" stroke-width="2.2" />
+      <circle cx="105.488" cy="62" r="2.208" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="107.696" y1="62" x2="113.216" y2="62" stroke="#0284C7" stroke-width="2" />
+      
+    </g>
+    
+      
+    <g>
+      <line x1="150.28" y1="62" x2="154.88" y2="62" stroke="#0284C7" stroke-width="2" />
+      <polygon points="154.88,54.64 154.88,69.36 169.6,62" fill="#FFFFFF" stroke="#0369A1" stroke-width="2.1" />
+      <circle cx="171.808" cy="62" r="2.208" fill="#FFFBEB" stroke="#0369A1" stroke-width="2" />
+      <line x1="174.016" y1="62" x2="179.72" y2="62" stroke="#0284C7" stroke-width="2" />
+      
+    </g>
+    
+      <text x="232" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#B45309">t_nov = 2–3 ns</text>
+      <text x="152" y="96" text-anchor="middle" font-size="11" font-weight="600" fill="#0C4A6E">Xuất 4 pha: Φ₁, Φ₁_b, Φ₂, Φ₂_b</text>
+
+      <path d="M 285 48 L 405 48 L 405 130" fill="none" stroke="#0284C7" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-blue)" />
+      <path d="M 285 76 L 590 76 L 590 130" fill="none" stroke="#D97706" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-gold)" />
+      <text x="355" y="40" font-size="11.5" font-weight="800" fill="#0369A1">Φ₁, Φ₁_b</text>
+      <text x="538" y="68" font-size="11.5" font-weight="800" fill="#B45309">Φ₂, Φ₂_b</text>
+
+      <!-- INPUT -->
+      <rect x="88" y="144" width="136" height="52" rx="10" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2" />
+      <text x="156" y="166" text-anchor="middle" font-size="13" font-weight="800" fill="#B45309">INPUT Vin(t)</text>
+      <text x="156" y="185" text-anchor="middle" font-size="10.5" fill="#78350F">0.9 V ± 0.4 V</text>
+      <line x1="224" y1="170" x2="368" y2="170" stroke="#0284C7" stroke-width="2.4" marker-end="url(#arr-blue)" />
+
+      <!-- TG1 Bow-Tie -->
+      
+    <g>
+      <polygon points="376.92,152.72 376.92,187.28 405,170" fill="#E0F2FE" stroke="#0369A1" stroke-width="2" />
+      <polygon points="433.08,152.72 433.08,187.28 405,170" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+      <line x1="392.04" y1="158.12" x2="417.96" y2="158.12" stroke="#D97706" stroke-width="2" />
+      <circle cx="405" cy="152.72" r="4.86" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <line x1="405" y1="147.86" x2="405" y2="137.6" stroke="#D97706" stroke-width="1.8" />
+      <line x1="392.04" y1="181.88" x2="417.96" y2="181.88" stroke="#0369A1" stroke-width="2" />
+      <line x1="405" y1="181.88" x2="405" y2="202.4" stroke="#0369A1" stroke-width="1.8" />
+      <text x="405" y="128.96" text-anchor="middle" font-size="12.4" font-weight="800" fill="#0369A1">2. TG1 (Φ₁)</text><text x="405" y="213.2" text-anchor="middle" font-size="10.8" font-weight="700" fill="#B45309">Ron &lt; 5 kΩ</text>
+    </g>
+    
+      <line x1="433" y1="170" x2="554" y2="170" stroke="#0284C7" stroke-width="2.4" />
+      <circle cx="496" cy="170" r="4" fill="#0C4A6E" />
+      <text x="480" y="156" font-size="11" font-weight="800" fill="#0369A1">V₁</text>
+      <line x1="496" y1="170" x2="496" y2="218" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="478" y1="218" x2="514" y2="218" stroke="#0369A1" stroke-width="3.2" />
+      <line x1="478" y1="228" x2="514" y2="228" stroke="#0369A1" stroke-width="3.2" />
+      <line x1="496" y1="228" x2="496" y2="256" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="484" y1="256" x2="508" y2="256" stroke="#0C4A6E" stroke-width="2" />
+      <text x="466" y="232" text-anchor="end" font-size="12" font-weight="800" fill="#0C4A6E">3. C₁ = 100 fF</text>
+      <text x="466" y="248" text-anchor="end" font-size="10.5" fill="#0369A1">(1× MIM)</text>
+
+      <!-- TG2 Bow-Tie -->
+      
+    <g>
+      <polygon points="561.92,152.72 561.92,187.28 590,170" fill="#E0F2FE" stroke="#0369A1" stroke-width="2" />
+      <polygon points="618.08,152.72 618.08,187.28 590,170" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+      <line x1="577.04" y1="158.12" x2="602.96" y2="158.12" stroke="#D97706" stroke-width="2" />
+      <circle cx="590" cy="152.72" r="4.86" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <line x1="590" y1="147.86" x2="590" y2="137.6" stroke="#D97706" stroke-width="1.8" />
+      <line x1="577.04" y1="181.88" x2="602.96" y2="181.88" stroke="#0369A1" stroke-width="2" />
+      <line x1="590" y1="181.88" x2="590" y2="202.4" stroke="#0369A1" stroke-width="1.8" />
+      <text x="590" y="128.96" text-anchor="middle" font-size="12.4" font-weight="800" fill="#0369A1">2. TG2 (Φ₂)</text><text x="590" y="213.2" text-anchor="middle" font-size="10.8" font-weight="700" fill="#B45309">Ron &lt; 5 kΩ</text>
+    </g>
+    
+      <line x1="618" y1="170" x2="770" y2="170" stroke="#0284C7" stroke-width="2.4" marker-end="url(#arr-blue)" />
+      <circle cx="696" cy="170" r="4" fill="#0C4A6E" />
+      <text x="696" y="156" text-anchor="middle" font-size="12" font-weight="800" fill="#0369A1">Vx</text>
+      <line x1="696" y1="170" x2="696" y2="218" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="676" y1="218" x2="716" y2="218" stroke="#0369A1" stroke-width="3.2" />
+      <line x1="676" y1="228" x2="716" y2="228" stroke="#0369A1" stroke-width="3.2" />
+      <line x1="696" y1="228" x2="696" y2="256" stroke="#0C4A6E" stroke-width="2.2" />
+      <line x1="684" y1="256" x2="708" y2="256" stroke="#0C4A6E" stroke-width="2" />
+      <text x="724" y="232" text-anchor="start" font-size="12" font-weight="800" fill="#0C4A6E">3. C₂ = 800 fF</text>
+      <text x="724" y="248" text-anchor="start" font-size="10.5" fill="#0369A1">(8× MIM + Dummy)</text>
+
+      <!-- Block 4: 5T-OTA Triangle -->
+      <polygon points="776,112 776,248 932,180" fill="#FFFBEB" stroke="#D97706" stroke-width="2.4" />
+      <text x="791" y="176" font-size="15" font-weight="800" fill="#0C4A6E">+</text>
+      <text x="791" y="210" font-size="15" font-weight="800" fill="#0C4A6E">−</text>
+      <text x="836" y="176" text-anchor="middle" font-size="13.5" font-weight="800" fill="#B45309">4. ota_5t</text>
+      <text x="836" y="194" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0369A1">A_OL &gt; 40 dB</text>
+      <text x="836" y="210" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0369A1">PM ≥ 60°</text>
+
+      <line x1="932" y1="180" x2="984" y2="180" stroke="#0284C7" stroke-width="2.6" marker-end="url(#arr-blue)" />
+      <circle cx="958" cy="180" r="4" fill="#0C4A6E" />
+      <path d="M 958 180 L 958 268 L 750 268 L 750 205 L 776 205" fill="none" stroke="#D97706" stroke-width="2.2" />
+
+      <rect x="990" y="152" width="100" height="56" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="2.2" />
+      <text x="1040" y="176" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">OUTPUT</text>
+      <text x="1040" y="195" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0C4A6E">Vout (1 pF)</text>
+    </svg>
+    
+              <div class="grid grid-cols-4 gap-3 mt-2 pt-2.5 border-t border-sky-200 text-xs">
+                <div><strong class="text-sky-800">Khối 1:</strong> Phân phối xung không chồng lấn.</div>
+                <div><strong class="text-blue-700">Khối 2:</strong> Chuyển giao gói điện tích $94\tau$.</div>
+                <div><strong class="text-sky-950">Khối 3:</strong> Mảng tụ MIM $3\times 3$ khóa $H(z)$.</div>
+                <div><strong class="text-amber-800">Khối 4:</strong> Cách ly nút $V_X$ &amp; kéo tải ADC.</div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Khi cấp tín hiệu thực tế vào chân <span class="code-tag">V_in</span> của con chip này, dạng sóng và phổ tại <span class="code-tag">V_out</span> dự kiến đạt những con số nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 15 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s16" data-notes="Ngõ ra Vout dự kiến giữ 96.6% tín hiệu 50 kHz và nén nhiễu 2 MHz đi 10 lần (-20.02 dB). Các cổng kiểm định Tuần 3 và 4 cam kết sai số fc &lt; 5%, SFDR &gt; 50 dB, THD &lt; -48 dB.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi IV — Năng Lực Sản Phẩm Hoàn Thiện</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Sản Phẩm Xử Lý Được Gì? — Đặc Tả INPUT &amp; OUTPUT Dự Kiến</h2>
+      </div>
+      <span class="badge-gold">Expected Chip Performance</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-7 fig-frame p-2">
+                <img src="figs/week1_io_expected.png" alt="Expected I/O" class="max-h-[410px] w-auto object-contain" />
+              </div>
+              <div class="col-span-5 flex flex-col gap-3 justify-center">
+                <div class="gold-card border-l-4 border-l-amber-500 py-2.5">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">INPUT Đưa Vào Chip</div>
+                  <ul class="mt-1 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                    <li>Điện áp tương tự $V_{\text{in}}(t) \in [0.48, 1.32]\text{ V}$ quanh $0.9\text{ V}$.</li>
+                    <li>Thử chuẩn: $0.30\sin(2\pi\cdot 50\text{ kHz}\,t) + 0.12\sin(2\pi\cdot 2\text{ MHz}\,t)$.</li>
+                    <li>Nguồn $V_{DD} = 1.8\text{ V}$ &amp; xung vuông $V_{\text{clk}} = 10\text{ MHz}$.</li>
+                  </ul>
+                </div>
+                <div class="ocean-card border-l-4 border-l-sky-600 py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">OUTPUT Dự Kiến Tại Chân <span class="code-tag">Vout</span> ($C_L = 1\text{ pF}$)</div>
+                  <ul class="mt-1 space-y-1 text-xs text-sky-950 list-disc pl-4">
+                    <li><strong>Dải thông $50\text{ kHz}$:</strong> giữ $96.6\%$ biên độ ($\mathbf{-0.30\text{ dB}} \to 0.290\text{ V}_p$).</li>
+                    <li><strong>Nhiễu $2\text{ MHz}$:</strong> nén <strong>$-20.02\text{ dB}$</strong> ($120\text{ mV}_p \to \mathbf{12\text{ mV}_p}$).</li>
+                    <li><strong>Tại Nyquist $5\text{ MHz}$:</strong> nén sâu tới <strong>$-24.61\text{ dB}$</strong> ($17\times$).</li>
+                  </ul>
+                </div>
+                <div class="ieee-card border-sky-400 py-2.5">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Chỉ Tiêu Cam Kết Trên Silicon (Gate 3 &amp; 4)</div>
+                  <div class="grid grid-cols-3 gap-2 mt-1.5 text-center">
+                    <div class="bg-sky-50 border border-sky-200 rounded-lg p-1.5">
+                      <div class="text-sm font-extrabold text-sky-700 mono">$|\Delta f_c| &lt; 5\%$</div>
+                      <div class="text-[10px] text-sky-900">$178.3\text{–}197.1\text{ kHz}$</div>
+                    </div>
+                    <div class="bg-sky-50 border border-sky-200 rounded-lg p-1.5">
+                      <div class="text-sm font-extrabold text-blue-700 mono">$\text{SFDR} &gt; 50\text{ dB}$</div>
+                      <div class="text-[10px] text-sky-900">Không gai hài lạ</div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-300 rounded-lg p-1.5">
+                      <div class="text-sm font-extrabold text-amber-800 mono">$\text{THD} &lt; -48\text{ dB}$</div>
+                      <div class="text-[10px] text-amber-900">Méo hài $&lt; 0.4\%$</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bước sang Hồi V: Làm sao đo kiểm đáp ứng tần số của con chip này trên Ngspice — tại sao tuyệt đối không được dùng lệnh <span class="code-tag">.ac</span> quen thuộc?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 16 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s17" data-notes="Lệnh .ac đóng băng khóa ở t=0 làm TG2 hở mạch vĩnh viễn (~10^11 Ohm). Do đó toàn mạch SC (hệ LPTV) bắt buộc kiểm tra bằng .tran + lấy mẫu Strobe cuối Phi2 + Coherent FFT.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi V — Cơ Sở Toán–Lý Của Phương Pháp Mô Phỏng</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Hệ LTI vs. Hệ LPTV: Chứng Minh Vì Sao Lệnh <span class="code-tag">.ac</span> Bất Lực Với Lõi SC</h2>
+      </div>
+      <span class="badge-gold">SPICE Engine Physics</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-6 ieee-card border-t-4 border-t-amber-500 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-amber-800 mono">1. Điều gì xảy ra khi gõ lệnh <span class="code-tag">.ac</span> lên lõi SC?</span>
+                  <div class="my-2.5 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200">
+                    
+    <svg viewBox="0 0 460 112" class="w-full h-[104px]">
+      <text x="230" y="16" text-anchor="middle" font-size="11.5" font-weight="800" fill="#B45309">
+        Trạng thái đóng băng tĩnh tại t = 0 của thuật toán .ac
+      </text>
+      <text x="26" y="64" font-size="12" font-weight="800" fill="#0C4A6E">Vin</text>
+      <line x1="56" y1="58" x2="96" y2="58" stroke="#0284C7" stroke-width="2.4" />
+      
+    <g>
+      <polygon points="110.68,44.88 110.68,71.12 132,58" fill="#E0F2FE" stroke="#0369A1" stroke-width="2" />
+      <polygon points="153.32,44.88 153.32,71.12 132,58" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+      <line x1="122.16" y1="48.980000000000004" x2="141.84" y2="48.980000000000004" stroke="#D97706" stroke-width="2" />
+      <circle cx="132" cy="44.88" r="3.69" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <line x1="132" y1="41.19" x2="132" y2="33.400000000000006" stroke="#D97706" stroke-width="1.8" />
+      <line x1="122.16" y1="67.02" x2="141.84" y2="67.02" stroke="#0369A1" stroke-width="2" />
+      <line x1="132" y1="67.02" x2="132" y2="82.6" stroke="#0369A1" stroke-width="1.8" />
+      <text x="132" y="26.840000000000003" text-anchor="middle" font-size="9.4" font-weight="800" fill="#0369A1">TG1 ĐÓNG</text><text x="132" y="90.80000000000001" text-anchor="middle" font-size="8.2" font-weight="700" fill="#B45309">~1.7 kΩ</text>
+    </g>
+    
+      <line x1="162" y1="58" x2="232" y2="58" stroke="#0C4A6E" stroke-width="2.2" />
+      <circle cx="198" cy="58" r="3.5" fill="#0C4A6E" />
+      <line x1="198" y1="58" x2="198" y2="90" stroke="#0C4A6E" stroke-width="2" />
+      <text x="198" y="104" text-anchor="middle" font-size="11" font-weight="800" fill="#0369A1">C₁</text>
+      <rect x="232" y="38" width="112" height="40" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="2" stroke-dasharray="4,3" />
+      <text x="288" y="55" text-anchor="middle" font-size="10.5" font-weight="800" fill="#B45309">TG2 HỞ MÃI MÃI!</text>
+      <text x="288" y="70" text-anchor="middle" font-size="9.5" font-weight="600" fill="#78350F">R_off ~ 10¹¹ Ω</text>
+      <line x1="344" y1="58" x2="395" y2="58" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4,3" />
+      <text x="424" y="63" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0369A1">C₂ (Cô lập)</text>
+    </svg>
+    
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li>SPICE giải 1 ma trận tĩnh duy nhất: $(\mathbf{G}_{\text{op}} + j\omega\mathbf{C}_{\text{op}})\mathbf{V}(\omega) = \mathbf{I}(\omega)$.</li>
+                    <li>Vì $\mathbf{G}_{\text{op}}$ cố định theo $t=0$, đường truyền sang $C_2$ bị <strong>đứt mạch hoàn toàn</strong>!</li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded bg-amber-100 border border-amber-300 text-xs font-bold text-amber-950 text-center">
+                  Kết luận: <span class="code-tag">.ac</span> chỉ hợp lệ cho hệ LTI (như khối <span class="code-tag">ota_5t</span> độc lập)
+                </div>
+              </div>
+
+              <div class="col-span-6 ocean-card border-t-4 border-t-sky-600 flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-800 mono">2. Bản chất LPTV &amp; Giải pháp Coherent FFT miền thời gian</span>
+                  <p class="text-xs text-sky-950 mt-2">
+                    Mạch tụ chuyển mạch là hệ <strong>Biến thiên Tuần hoàn theo Thời gian (LPTV)</strong>: $\mathbf{G}(t + T_{\text{clk}}) = \mathbf{G}(t)$. Để đo đúng hàm truyền &amp; méo phi tuyến:
+                  </p>
+                  <div class="bg-white border border-sky-200 rounded-lg p-2 my-2.5 text-center text-xs">
+                    $$f_{\text{in}} = \frac{M_{\text{sig}}}{N_{\text{FFT}}} \cdot f_{\text{clk}} \qquad \left(\gcd(M_{\text{sig}}, N_{\text{FFT}}) = 1,\ N_{\text{FFT}} = 2^k\right)$$
+                  </div>
+                  <ul class="text-xs text-sky-950 space-y-1.5 list-disc pl-4">
+                    <li><strong>Chạy <span class="code-tag">.tran</span> thực tế:</strong> Đóng ngắt xung $10\text{ MHz}$ qua hàng trăm chu kỳ.</li>
+                    <li><strong>Lấy mẫu cuối pha $\Phi_2$ (Strobe):</strong> Thu chuỗi $V_{\text{out}}[n]$ khi đã ổn định.</li>
+                    <li><strong>Coherent FFT:</strong> Đúng số nguyên $M_{\text{sig}}$ chu kỳ $\implies$ <strong>0 rò rỉ phổ!</strong></li>
+                  </ul>
+                </div>
+                <div class="mt-3 p-2 rounded bg-white border border-sky-300 text-xs font-bold text-sky-900 text-center">
+                  Đo đồng thời chính xác $|H(f)|, f_{c,\text{SC}}, \text{SFDR}, \text{THD}, \text{SNDR}, \text{ENOB}$
+                </div>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Từ sự khác biệt LTI vs. LPTV đó, toàn bộ quy trình 4 lớp để kiểm tra mạch hoạt động ổn định từ sơ đồ đến Silicon được thiết lập như thế nào?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 17 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s18" data-notes="Quy trình kiểm định ổn định gồm 4 lớp độc lập: BIBO toán học, Bode/Step cho OTA, .tran+Strobe+FFT cho toàn mạch LPTV, và PVT+DRC/LVS/PEX cho vật lý silicon.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi V — Chiến Lược Kiểm Tra Ổn Định Toàn Diện</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bốn Lớp Kiểm Chứng Độ Ổn Định Từ Phương Trình Đến Mặt Nạ Silicon</h2>
+      </div>
+      <span class="badge-ocean">Verification-First Methodology</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-4 gap-3.5">
+              <div class="ieee-card border-t-4 border-t-sky-600 py-2.5 px-3.5">
+                <div class="text-[11px] font-bold uppercase text-sky-700 mono">Lớp 1 • Toán học</div>
+                <div class="font-bold text-sky-950 text-sm mt-0.5">Ổn Định BIBO</div>
+                <p class="text-xs text-sky-900 mt-1">Cực $|z_p| = 8/9 &lt; 1$ bảo đảm đáp ứng xung tắt dần tuyệt đối.</p>
+              </div>
+              <div class="ocean-card border-t-4 border-t-blue-600 py-2.5 px-3.5">
+                <div class="text-[11px] font-bold uppercase text-blue-700 mono">Lớp 2 • Vòng kín LTI</div>
+                <div class="font-bold text-sky-950 text-sm mt-0.5">Biên Pha $\text{PM} \ge 60^\circ$</div>
+                <p class="text-xs text-sky-900 mt-1"><span class="code-tag">.op</span> + <span class="code-tag">.ac</span> + Step ngăn 5T-OTA rung tự kích.</p>
+              </div>
+              <div class="gold-card border-t-4 border-t-amber-500 py-2.5 px-3.5">
+                <div class="text-[11px] font-bold uppercase text-amber-800 mono">Lớp 3 • Toàn mạch LPTV</div>
+                <div class="font-bold text-sky-950 text-sm mt-0.5">Coherent FFT</div>
+                <p class="text-xs text-sky-900 mt-1"><span class="code-tag">.tran</span> đa tần &amp; đơn tần đo lệch $f_c &lt; 5\%$, SFDR, THD.</p>
+              </div>
+              <div class="ieee-card border-t-4 border-t-sky-900 py-2.5 px-3.5">
+                <div class="text-[11px] font-bold uppercase text-sky-900 mono">Lớp 4 • Vật lý Wafer</div>
+                <div class="font-bold text-sky-950 text-sm mt-0.5">PVT + DRC/LVS/PEX</div>
+                <p class="text-xs text-sky-900 mt-1">Đối chiếu 3 cột xác minh ký sinh dây kim loại thực tế.</p>
+              </div>
+            </div>
+
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-xs">
+                <thead>
+                  <tr class="uppercase tracking-wider">
+                    <th class="py-2 px-3.5 text-left">Đối tượng kiểm tra</th>
+                    <th class="py-2 px-3.5 text-left">Phép đo SPICE / EDA</th>
+                    <th class="py-2 px-3.5 text-left">Ngưỡng đạt (Gate Pass)</th>
+                    <th class="py-2 px-3.5 text-left">Lý do kỹ thuật chọn phương pháp</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950 text-[12px]">
+                  <tr>
+                    <td class="py-2 px-3.5 font-bold"><span class="code-tag">non_overlap_clk</span></td>
+                    <td class="py-2 px-3.5 mono font-semibold">.tran</td>
+                    <td class="py-2 px-3.5">$t_{\text{nov}} \in [2,5]\text{ ns}$, $\Phi_1\cdot\Phi_2 \approx 0$</td>
+                    <td class="py-2 px-3.5">Xác minh khoảng chết thực tế chống rò điện tích trực tiếp.</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-bold"><span class="code-tag">tg_switch</span></td>
+                    <td class="py-2 px-3.5 mono font-semibold">.dc ($0 \to 1.8\text{ V}$) + PVT</td>
+                    <td class="py-2 px-3.5">$R_{\text{on,max}} &lt; 5\text{ k}\Omega$</td>
+                    <td class="py-2 px-3.5">Bắt đúng đỉnh Body Effect tại $0.96\text{ V}$, bảo đảm $94\tau$.</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-3.5 font-bold"><span class="code-tag">ota_5t</span></td>
+                    <td class="py-2 px-3.5 mono font-semibold">.op + .ac + .tran step</td>
+                    <td class="py-2 px-3.5">5 FET bão hòa, $A_{OL}&gt;40\text{ dB}, \text{PM}\ge 60^\circ$</td>
+                    <td class="py-2 px-3.5">Tiêu chuẩn Bode/Nyquist + kiểm chứng Slew Rate thực.</td>
+                  </tr>
+                  <tr class="row-gold font-semibold">
+                    <td class="py-2 px-3.5 font-bold text-amber-900"><span class="code-tag-gold">top_sc_lpf</span> (Pre &amp; PEX)</td>
+                    <td class="py-2 px-3.5 mono font-bold text-amber-900">.tran + Strobe + FFT</td>
+                    <td class="py-2 px-3.5">$|\Delta f_c|&lt;5\%, \text{SFDR}&gt;50\text{ dB}$, LVS Clean</td>
+                    <td class="py-2 px-3.5">Đo chính xác hệ LPTV và hậu kiểm tụ ký sinh sau Layout.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Trước khi viết dòng code mô phỏng đầu tiên cho Tuần 2, làm sao chắc chắn toàn bộ 22 phương trình của Tuần 1 không hề sai thứ nguyên đơn vị?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 18 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s19" data-notes="Script week1_verify.py kiểm chứng tự động đại số thứ nguyên hệ SI (kg, m, s, A, K) cho toàn bộ 22 phương trình của dự án, đạt 22/22 PASS.">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Hồi V — Bằng Chứng Định Lượng Verification Gate 1</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Kiểm Định Tự Động Thứ Nguyên Hệ SI: Khớp Tuyệt Đối 22 / 22 Công Thức</h2>
+      </div>
+      <span class="badge-ocean">22 / 22 SI Formulas PASS</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-12 gap-5">
+              <div class="col-span-4 flex flex-col gap-3.5 justify-center">
+                <div class="ocean-card py-4">
+                  <div class="text-xs font-bold uppercase text-sky-800 mono">Script Kiểm Chứng Tự Động</div>
+                  <div class="text-lg font-extrabold mono text-sky-950 mt-1">week1_verify.py</div>
+                  <p class="text-xs text-sky-900 mt-2">Phân tích vector số mũ cơ sở $(\text{kg}, \text{m}, \text{s}, \text{A}, \text{K})$ cho mọi vế phương trình.</p>
+                  <div class="mt-3 p-2.5 rounded-lg bg-white border-2 border-sky-500 text-center">
+                    <span class="text-2xl font-extrabold text-sky-700 mono">22 / 22 PASS</span>
+                  </div>
+                </div>
+                <div class="gold-card border-l-4 border-l-amber-500 py-3">
+                  <div class="text-xs font-bold uppercase text-amber-800 mono">Tệp dữ liệu xuất chuẩn</div>
+                  <p class="text-xs text-sky-950 mt-1">Lưu toàn bộ thông số khóa cứng và kết quả đo Ngspice PDK vào <span class="code-tag-gold">python/week1_numbers.json</span> làm đầu vào cho Tuần 2.</p>
+                </div>
+              </div>
+
+              <div class="col-span-8 ieee-card p-0 overflow-hidden">
+                <table class="ieee-table text-xs">
+                  <thead>
+                    <tr class="uppercase tracking-wider">
+                      <th class="py-2 px-3 text-left">Nhóm công thức</th>
+                      <th class="py-2 px-3 text-left">Biểu thức tiêu biểu</th>
+                      <th class="py-2 px-3 text-left">Thứ nguyên SI dẫn xuất</th>
+                      <th class="py-2 px-3 text-center">Đơn vị</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-sky-100 text-sky-950 text-[12px]">
+                    <tr><td class="py-2 px-3 font-semibold">Điện trở SC tương đương</td><td class="py-2 px-3">$R_{\text{eq}} = \frac{1}{f_{\text{clk}} C_1}$</td><td class="py-2 px-3 mono">$\text{kg}\cdot\text{m}^2\cdot\text{s}^{-3}\cdot\text{A}^{-2}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\Omega$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Tần số cắt &amp; Băng thông</td><td class="py-2 px-3">$f_{c,\text{RC}}, \text{GBW} = \frac{g_m}{2\pi C_L}, f_{p2}$</td><td class="py-2 px-3 mono">$\text{s}^{-1}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{Hz}$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Bảo toàn điện tích 2 pha</td><td class="py-2 px-3">$Q = C \cdot V$</td><td class="py-2 px-3 mono">$\text{s}\cdot\text{A}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{C}$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Phương sai nhiễu nhiệt</td><td class="py-2 px-3">$\overline{v_n^2} = \frac{k_B T}{C}$</td><td class="py-2 px-3 mono">$\text{kg}^2\cdot\text{m}^4\cdot\text{s}^{-6}\cdot\text{A}^{-2}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{V}^2$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Hỗ dẫn &amp; Nội trở MOSFET</td><td class="py-2 px-3">$g_m = \frac{2I_D}{V_{ov}},\ R_{\text{on}},\ r_o$</td><td class="py-2 px-3 mono">$\text{S}$ và $\Omega$ tương ứng</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{S}, \Omega$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Sụt áp ký sinh đóng ngắt</td><td class="py-2 px-3">$\Delta V_{\text{CI}} = \frac{W L C_{ox}V_{ov}}{2 C_H},\ \Delta V_{\text{CF}}$</td><td class="py-2 px-3 mono">$\text{kg}\cdot\text{m}^2\cdot\text{s}^{-3}\cdot\text{A}^{-1}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{V}$ ✓</td></tr>
+                    <tr><td class="py-2 px-3 font-semibold">Tụ MIM &amp; Slew Rate</td><td class="py-2 px-3">$C_{\text{mim}} = C_A(W+dw)(L+dw),\ \text{SR}=\frac{I_{\text{tail}}}{C_L}$</td><td class="py-2 px-3 mono">$\text{F}$ và $\text{V}\cdot\text{s}^{-1}$</td><td class="py-2 px-3 text-center font-bold text-sky-700">$\text{F}, \text{V/s}$ ✓</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Mọi phương trình, thông số và kiến trúc đã được kiểm chứng — cùng chốt bảng Tổng kết Gate 1 và lộ trình bước sang Tuần 2.</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 19 / 20</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="slide" id="s20" data-notes="Gate 1 Tuần 1 hoàn tất 100%. Câu hỏi tự nhiên mở ra cho Tuần 2: tại sao không vẽ thẳng Schematic mà phải xây dựng Python Golden Model &amp; tính Sizing W/L trước?">
+    <div class="flex items-center justify-between border-b-2 border-sky-200 pb-2 shrink-0">
+      <div>
+        <span class="text-[11.5px] font-bold uppercase tracking-wider text-sky-700 mono">Tổng Kết Báo Cáo Tuần 1 — Verification Gate 1 Sign-Off</span>
+        <h2 class="text-[22px] font-extrabold text-sky-950 leading-snug">Bảng Khóa Cứng Kiến Trúc Tuần 1 &amp; Lộ Trình Triển Khai 4 Tuần</h2>
+      </div>
+      <span class="badge-ocean">GATE 1: VERIFIED &amp; LOCKED</span>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col justify-center gap-2.5 py-1.5">
+      
+            <div class="grid grid-cols-4 gap-3">
+              <div class="rounded-xl ocean-card p-2.5 text-xs border-2 border-sky-600"><div class="font-bold text-sky-800 mono">TUẦN 1 • ✓ PASS</div><div class="font-semibold text-sky-950 mt-0.5">Bài toán → S&amp;S → 4 Khối</div></div>
+              <div class="rounded-xl gold-card p-2.5 text-xs"><div class="font-bold text-amber-800 mono">TUẦN 2 • TIẾP THEO</div><div class="font-semibold text-sky-950 mt-0.5">Golden Model FFT &amp; Sizing $W/L$</div></div>
+              <div class="rounded-xl ieee-card p-2.5 text-xs"><div class="font-bold text-sky-700 mono">TUẦN 3</div><div class="font-semibold text-sky-900 mt-0.5">Xschem &amp; Pre-Layout Ngspice</div></div>
+              <div class="rounded-xl ieee-card p-2.5 text-xs"><div class="font-bold text-sky-700 mono">TUẦN 4</div><div class="font-semibold text-sky-900 mt-0.5">Layout ABBA, DRC/LVS &amp; PEX</div></div>
+            </div>
+
+            <div class="ieee-card p-0 overflow-hidden">
+              <table class="ieee-table text-sm">
+                <thead>
+                  <tr class="text-xs uppercase tracking-wider">
+                    <th class="py-2 px-4 text-left">Hạng mục Chốt Gate 1</th>
+                    <th class="py-2 px-4 text-left">Cơ sở Lý thuyết &amp; Cấu hình</th>
+                    <th class="py-2 px-4 text-left">Thông số Khóa Cứng</th>
+                    <th class="py-2 px-4 text-center">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sky-100 text-sky-950 text-[12.8px]">
+                  <tr><td class="py-2 px-4 font-semibold">1. Cầu nối S&amp;S $\to$ Lõi lọc</td><td class="py-2 px-4">$H(z) = \frac{1/9}{1 - (8/9)z^{-1}}$, $\text{OSR} = 26.64$</td><td class="py-2 px-4">$f_{\text{clk}}=10\text{ MHz},\ f_{c,\text{SC}}=\mathbf{187.675\text{ kHz}}$</td><td class="py-2 px-4 text-center"><span class="badge-ocean">LOCKED</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">2. Mảng tụ MIM (<span class="code-tag">sc_core</span>)</td><td class="py-2 px-4">$\text{SNR}_{kT/C} = 71.9\text{ dB}$, ma trận $3\times 3$</td><td class="py-2 px-4">$C_1=100\text{ fF},\ C_2=800\text{ fF}$ ($4.85\times 9.85\ \mu\text{m}$)</td><td class="py-2 px-4 text-center"><span class="badge-ocean">LOCKED</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">3. Xung &amp; Khóa (<span class="code-tag">clk</span>, <span class="code-tag">tg</span>)</td><td class="py-2 px-4">Chống rò mẫu &amp; nạp $94\tau$ kháng THD</td><td class="py-2 px-4">$t_{\text{nov}} \in [2,5]\text{ ns},\ W_n/W_p = 4/12\ \mu\text{m}$ ($2.26\text{ k}\Omega$)</td><td class="py-2 px-4 text-center"><span class="badge-ocean">PASS</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">4. Bộ đệm đơn vị (<span class="code-tag">ota_5t</span>)</td><td class="py-2 px-4">$\epsilon_A &lt; 1\%$, hệ bậc 2 không rung ($\zeta \ge 0.66$)</td><td class="py-2 px-4">$A_{OL}&gt;40\text{ dB},\ \text{GBW}&gt;10\text{ MHz},\ \text{PM}\ge 60^\circ$</td><td class="py-2 px-4 text-center"><span class="badge-ocean">LOCKED</span></td></tr>
+                  <tr><td class="py-2 px-4 font-semibold">5. Thứ nguyên &amp; Hạ tầng EDA</td><td class="py-2 px-4"><span class="code-tag">week1_verify.py</span> + <span class="code-tag">env_sky130.sh</span></td><td class="py-2 px-4"><strong>22 / 22</strong> phương trình SI PASS • PDK <span class="code-tag">sky130A</span></td><td class="py-2 px-4 text-center"><span class="badge-gold">READY</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            
+    </div>
+
+    <div class="space-y-1.5 shrink-0">
+      
+      <div class="transition-hook">
+        <span class="mono text-amber-700 font-bold text-xs uppercase shrink-0">Câu hỏi tiếp theo →</span>
+        <span>Bước sang Tuần 2: Tuần 2 là gì, Golden Model là gì, và chúng ta mô phỏng gì trên Python trước khi vẽ Xschem?</span>
+      </div>
+      <div class="text-center text-[11px] text-sky-900/70 border-t border-sky-200/80 pt-1">
+        SKY130-SC-LPF • Tuần 1: Lý Thuyết, Cầu Nối Tín Hiệu &amp; Hệ Thống $\to$ Vi Mạch • <span class="mono font-bold text-sky-900">Slide 20 / 20</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Speaker Notes Drawer (Press N) -->
+<div id="notes-panel">
+  <div class="flex items-center justify-between border-b border-sky-200 pb-1.5 mb-2">
+    <span class="text-xs font-bold uppercase tracking-wider text-sky-700 mono">Kịch bản Dẫn dắt Thuyết trình (Phím N)</span>
+    <button onclick="toggleNotes()" class="text-amber-700 hover:text-sky-800 text-xs font-bold mono">[Đóng]</button>
+  </div>
+  <div id="notes-text"></div>
+</div>
+
+<!-- Bottom-Left Week Switcher -->
+<div class="week-switcher hud-pill fixed bottom-2 left-4 flex items-center gap-1 px-2 py-1 rounded-full z-50">
+  <a href="index.html" class="nav-link">Trọn Bộ 4 Tuần</a>
+  <a href="week1_slides.html" class="nav-link current">Tuần 1: Lý Thuyết</a>
+  <a href="week2_slides.html" class="nav-link">Tuần 2: Python & Sizing</a>
+  <a href="week3_slides.html" class="nav-link">Tuần 3: Xschem & SPICE</a>
+  <a href="week4_slides.html" class="nav-link">Tuần 4: Layout & PEX</a>
+  
+</div>
+
+<!-- Bottom-Right Navigation HUD -->
+<div class="nav-controls hud-pill fixed bottom-2 right-4 flex items-center gap-2 px-3 py-1 rounded-full text-xs mono z-50">
+  <button onclick="toggleNotes()" class="px-2 py-0.5 hover:text-amber-600 font-bold border-r border-sky-200 pr-2.5" title="Speaker Notes (N)">Notes (N)</button>
+  <button onclick="go(-1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Trước (←)">◀</button>
+  <span id="counter" class="font-bold text-sky-900">01 / 20</span>
+  <button onclick="go(1)" class="px-1.5 py-0.5 hover:text-amber-600 font-bold" title="Slide Tiếp (→)">▶</button>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-track">
+  <div id="progress-fill" class="progress-fill" style="width: 5.00%;"></div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const deck = document.getElementById('deck');
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progress-fill');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesText = document.getElementById('notes-text');
+  let idx = 0;
+
+  function show(i) {
+    idx = (i + slides.length) % slides.length;
+    slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+    counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+    progressFill.style.width = (((idx + 1) / slides.length) * 100).toFixed(2) + '%';
+    notesText.textContent = slides[idx].dataset.notes || '';
+  }
+  function go(d) { show(idx + d); }
+  function jumpToId(id) {
+    const pos = slides.findIndex((s) => s.id === id);
+    if (pos >= 0) show(pos);
+  }
+  function toggleNotes() { notesPanel.classList.toggle('open'); }
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key.toLowerCase() === 'n') toggleNotes();
+  });
+  if (window.location.hash) {
+    const target = window.location.hash.slice(1);
+    const pos = slides.findIndex((s) => s.id === target);
+    if (pos >= 0) {
+      idx = pos;
+    } else {
+      const m = target.match(/^s(\d+)$/);
+      if (m) {
+        const n = parseInt(m[1], 10) - 1;
+        if (n >= 0 && n < slides.length) idx = n;
+      }
+    }
+  }
+  show(idx);
+  fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+v {xschem version=3.4.6 file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @@VIN @@VX @@PHI1 @@PHI1_B @@PHI2 @@PHI2_B @@VDD @@VSS @symname"
+template="name=X1"
+}
+V {}
+S {}
+E {}
+L 4 -105 -85 105 -85 {}
+L 4 105 -85 105 85 {}
+L 4 105 85 -105 85 {}
+L 4 -105 85 -105 -85 {}
+T {@name} 105 -101 0 1 0.20 0.20 {}
+T {SC MIM CORE (1:8)} 0 0 0 0 0.21 0.21 {hcenter=true vcenter=true layer=7}
+L 4 -125 -35 -105 -35 {}
+B 5 -127.5 -37.5 -122.5 -32.5 {name=VIN dir=in}
+T {VIN} -99 -40 0 0 0.17 0.17 {}
+L 4 -125 -5 -105 -5 {}
+B 5 -127.5 -7.5 -122.5 -2.5 {name=PHI1 dir=in}
+T {PHI1} -99 -10 0 0 0.17 0.17 {}
+L 4 -125 18 -105 18 {}
+B 5 -127.5 15.5 -122.5 20.5 {name=PHI1_B dir=in}
+T {PHI1_B} -99 13 0 0 0.17 0.17 {}
+L 4 -125 41 -105 41 {}
+B 5 -127.5 38.5 -122.5 43.5 {name=PHI2 dir=in}
+T {PHI2} -99 36 0 0 0.17 0.17 {}
+L 4 -125 64 -105 64 {}
+B 5 -127.5 61.5 -122.5 66.5 {name=PHI2_B dir=in}
+T {PHI2_B} -99 59 0 0 0.17 0.17 {}
+L 4 105 -35 125 -35 {}
+B 5 122.5 -37.5 127.5 -32.5 {name=VX dir=out}
+T {VX} 99 -40 0 1 0.17 0.17 {}
+L 4 0 -115 0 -85 {}
+B 5 -2.5 -117.5 2.5 -112.5 {name=VDD dir=inout}
+T {VDD} 0 -79 0 0 0.15 0.15 {hcenter=true}
+L 4 0 85 0 115 {}
+B 5 -2.5 112.5 2.5 117.5 {name=VSS dir=inout}
+T {VSS} 0 69 0 0 0.15 0.15 {hcenter=true}

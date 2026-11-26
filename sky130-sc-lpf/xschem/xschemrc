@@ -1,0 +1,6 @@
+# Project-local xschemrc for sky130-sc-lpf
+source /foss/pdks/sky130A/libs.tech/xschem/xschemrc
+set SKYWATER_MODELS /foss/pdks/sky130A/libs.tech/combined
+append XSCHEM_LIBRARY_PATH :/headless/ANN/sky130-sc-lpf/xschem
+set netlist_dir /headless/ANN/sky130-sc-lpf/ngspice
+set local_netlist_dir 0

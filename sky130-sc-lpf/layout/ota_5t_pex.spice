@@ -1,0 +1,62 @@
+* NGSPICE file created from ota_5t_flat.ext - technology: sky130A
+
+.subckt ota_5t INP INN IBIAS VOUT VDD VSS
+X0 a_n1555_n400# a_n1555_n400# VDD VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X1 VSS IBIAS IBIAS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X2 VOUT INN a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X3 a_n1555_n400# INP a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X4 IBIAS IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=1.16 pd=8.58 as=0.58 ps=4.29 w=4 l=1
+X5 VOUT INN a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X6 VDD a_n1555_n400# VOUT VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X7 a_n1555_n400# a_n1555_n400# VDD VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=1.16 ps=8.58 w=4 l=0.8
+X8 a_n1773_n400# IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X9 a_n1773_n400# INP a_n1555_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X10 VOUT INN a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X11 VSS IBIAS a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X12 VDD a_n1555_n400# a_n1555_n400# VDD sky130_fd_pr__pfet_01v8 ad=1.16 pd=8.58 as=0.58 ps=4.29 w=4 l=0.8
+X13 a_n1773_n400# INP a_n1555_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X14 VOUT a_n1555_n400# VDD VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X15 a_n1773_n400# IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X16 a_n1555_n400# INP a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X17 a_n1773_n400# INP a_n1555_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X18 VSS IBIAS IBIAS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=1.16 ps=8.58 w=4 l=1
+X19 VDD a_n1555_n400# VOUT VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X20 VSS IBIAS a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X21 a_n1555_n400# INP a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=1.16 ps=8.58 w=4 l=0.8
+X22 a_n1773_n400# INN VOUT VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X23 a_n1555_n400# INP a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X24 a_n1773_n400# INN VOUT VSS sky130_fd_pr__nfet_01v8 ad=1.16 pd=8.58 as=0.58 ps=4.29 w=4 l=0.8
+X25 VSS IBIAS IBIAS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X26 a_n1773_n400# IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X27 VSS IBIAS a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X28 VOUT a_n1555_n400# VDD VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X29 a_n1773_n400# INP a_n1555_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X30 a_n1773_n400# INN VOUT VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X31 VDD a_n1555_n400# a_n1555_n400# VDD sky130_fd_pr__pfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X32 VOUT INN a_n1773_n400# VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X33 IBIAS IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+X34 a_n1773_n400# INN VOUT VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=0.8
+X35 IBIAS IBIAS VSS VSS sky130_fd_pr__nfet_01v8 ad=0.58 pd=4.29 as=0.58 ps=4.29 w=4 l=1
+C0 VOUT INN 1.89415f
+C1 a_n1555_n400# a_n1773_n400# 1.24812f
+C2 INP a_n1773_n400# 1.96964f
+C3 a_n1555_n400# VDD 7.0139f
+C4 a_n1555_n400# INN 0.07354f
+C5 VOUT IBIAS 0.00184f
+C6 INP VDD 0.01005f
+C7 INP INN 0.79079f
+C8 INN a_n1773_n400# 3.75519f
+C9 a_n1555_n400# IBIAS 0.00184f
+C10 INP IBIAS 0.00867f
+C11 a_n1555_n400# VOUT 2.60396f
+C13 a_n1773_n400# IBIAS 2.53838f
+C14 INP VOUT 0.89841f
+C15 VOUT a_n1773_n400# 1.25086f
+C16 INN IBIAS 0.07551f
+C17 a_n1555_n400# INP 2.82528f
+C18 VOUT VDD 1.09305f
+C19 VOUT VSS 5.43685f
+C20 VDD VSS 12.53946f
+C21 a_n1773_n400# VSS 8.50113f
+.ends
+

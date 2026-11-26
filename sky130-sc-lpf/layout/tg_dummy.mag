@@ -1,0 +1,70 @@
+magic
+tech sky130A
+magscale 1 2
+timestamp 1795622114
+<< metal1 >>
+rect -40 -283 40 -231
+rect -40 1590 40 1642
+rect -40 129 40 181
+rect -40 760 40 812
+rect -67 -42 242 42
+rect -67 1108 242 1192
+rect 158 -42 242 42
+rect 158 1108 242 1192
+<< via1 >>
+rect -26 -283 26 -231
+rect -26 1590 26 1642
+rect -26 129 26 181
+rect -26 760 26 812
+rect 174 -26 226 26
+rect 174 1124 226 1176
+<< metal2 >>
+rect -34 -299 34 -215
+rect -302 -402 302 -318
+rect -34 -394 34 -223
+rect -34 1574 34 1658
+rect -302 1678 302 1762
+rect -34 1582 34 1754
+rect -34 113 34 197
+rect -34 121 34 374
+rect -46 294 46 386
+rect -34 744 34 828
+rect -34 586 34 820
+rect -46 574 46 666
+rect 158 -42 242 42
+rect 158 1108 242 1192
+rect 166 -34 234 1184
+rect 154 434 246 526
+<< via2 >>
+rect -28 312 28 368
+rect -28 592 28 648
+rect 172 452 228 508
+<< metal3 >>
+rect -52 288 52 392
+rect -342 298 42 382
+rect -52 568 52 672
+rect -342 578 42 662
+rect 148 428 252 532
+rect 158 438 362 522
+use dev_n_dum XMND
+timestamp 1795622114
+transform 1 0 0 0 1 0
+box -211 -310 211 310
+use dev_p_dum XMPD
+timestamp 1795622114
+transform 1 0 0 0 1 1150
+box -211 -519 211 519
+<< labels >>
+rlabel metal3 280 460 320 500 1 VNODE
+port 1 nsew
+rlabel metal3 -300 320 -260 360 1 G_N
+port 2 nsew
+rlabel metal3 -300 600 -260 640 1 G_P
+port 3 nsew
+rlabel metal2 -40 1700 40 1740 1 VDD
+port 4 nsew
+rlabel metal2 -40 -380 40 -340 1 VSS
+port 5 nsew
+<< properties >>
+string FIXED_BBOX -342 -402 362 1762
+<< end >>

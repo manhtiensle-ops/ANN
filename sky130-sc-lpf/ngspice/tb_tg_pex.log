@@ -1,0 +1,21 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * week 4 task 4.3b testbench: cmos transmission gate on-resistance sweep (post-layout pex)
+
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 361
+binary raw file "/headless/ANN/sky130-sc-lpf/ngspice/tb_tg_pex.raw"
+ron_at_vcm_kohm     =  4.56563e+00
+ron_max_sig_kohm    =  5.05862e+00 at=  9.40000e-01
+ron_max_rail_kohm   =  5.05862e+00 at=  9.40000e-01
+ron_min_rail_kohm   =  4.07640e-01 at=  0.00000e+00
+ngspice-47 done

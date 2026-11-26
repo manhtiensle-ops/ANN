@@ -1,0 +1,61 @@
+magic
+tech sky130A
+magscale 1 2
+timestamp 1795622114
+<< metal1 >>
+rect 18 -42 70 42
+rect -40 -283 40 -231
+rect 18 1058 70 1142
+rect -40 1490 40 1542
+rect -40 129 40 181
+rect -40 760 40 812
+rect -222 -42 -21 42
+rect -222 1058 -21 1142
+rect -222 -42 -138 42
+rect -222 1058 -138 1142
+<< via1 >>
+rect 18 -26 70 26
+rect -26 -283 26 -231
+rect 18 1074 70 1126
+rect -26 1490 26 1542
+rect -26 129 26 181
+rect -26 760 26 812
+rect -206 -26 -154 26
+rect -206 1074 -154 1126
+<< metal2 >>
+rect -270 -470 270 -370
+rect -270 1650 270 1750
+rect 10 -42 78 42
+rect 10 -454 78 34
+rect -34 -299 34 -215
+rect -34 -454 34 -223
+rect 10 1058 78 1142
+rect 10 1066 78 1734
+rect -34 1474 34 1558
+rect -34 1482 34 1734
+rect -34 113 34 197
+rect -34 744 34 828
+rect -34 121 34 820
+rect -222 -42 -138 42
+rect -222 1058 -138 1142
+rect -214 -34 -146 1134
+use dev_n_inv_in XMN
+timestamp 1795622114
+transform 1 0 0 0 1 0
+box -211 -310 211 310
+use dev_p_inv_in XMP
+timestamp 1795622114
+transform 1 0 0 0 1 1100
+box -211 -469 211 469
+<< labels >>
+rlabel metal2 -20 480 20 520 1 A
+port 1 nsew
+rlabel metal2 -200 480 -160 520 1 Y
+port 2 nsew
+rlabel metal2 -40 1670 40 1730 1 VDD
+port 3 nsew
+rlabel metal2 -40 -450 40 -390 1 VSS
+port 4 nsew
+<< properties >>
+string FIXED_BBOX -270 -470 270 1750
+<< end >>

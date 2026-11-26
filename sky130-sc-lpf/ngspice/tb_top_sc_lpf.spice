@@ -1,0 +1,30 @@
+* Task 3.4a-Opt Testbench: Top-Level SC LPF WITH W/2 Dummy Switches (Xschem top_sc_lpf)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/ngspice/top_sc_lpf_xschem.spice"
+.options reltol=1e-3 vntol=1e-5 abstol=1e-11 method=gear
+
+Vdd  vdd 0 1.8
+Vss  vss 0 0.0
+Vclk clk 0 pulse(0 1.8 5n 0.4n 0.4n 49.6n 100n)
+
+* Coherent Single-Tone Input: N_fft = 512 clocks, M_sig = 3 -> f0 = 58.59375 kHz, Ain = 0.20 V
+* Total simulation = 64 settling clocks + 512 FFT clocks = 576 clocks = 57.6 us
+Vin  vin_coh 0 sin(0.9 0.20 58593.75 0 0 0)
+
+Ib_opt vdd ib_opt 30u
+XDUT_OPT vin_coh clk ib_opt vout_opt vdd vss top_sc_lpf
+CL_OPT   vout_opt 0 1p
+
+.ic v(vout_opt)=0.9 v(xdut_opt.net5)=0.9
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+tran 2n 57.6u 0 2n
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_top_zoom.raw v(vin_coh) v(vout_opt) v(xdut_opt.net1) v(xdut_opt.net3)
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_top_opt.txt v(vin_coh) v(vout_opt) v(xdut_opt.net5)
+quit
+.endc
+.end

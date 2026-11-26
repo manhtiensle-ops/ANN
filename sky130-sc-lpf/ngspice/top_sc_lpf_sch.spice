@@ -1,0 +1,79 @@
+* LVS Reference Schematic Netlist for sky130-sc-lpf (Derived 1:1 from Xschem Hierarchy)
+
+.subckt inv_in A Y VDD VSS
+XMP Y A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=2.5 nf=1 mult=1
+XMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.0 nf=1 mult=1
+.ends
+
+.subckt inv_del A Y VDD VSS
+XMP Y A VDD VDD sky130_fd_pr__pfet_01v8 L=0.95 W=1.5 nf=1 mult=1
+XMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.95 W=0.6 nf=1 mult=1
+.ends
+
+.subckt inv_buf A Y VDD VSS
+XMP Y A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=6.0 nf=2 mult=1
+XMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=2.0 nf=2 mult=1
+.ends
+
+.subckt nand2_cell A B Y VDD VSS
+XMPA Y A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=2.0 nf=1 mult=1
+XMPB Y B VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=2.0 nf=1 mult=1
+XMNA Y A net1 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.6 nf=1 mult=1
+XMNB net1 B VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.6 nf=1 mult=1
+.ends
+
+.subckt non_overlap_clk CLK PHI1 PHI1_B PHI2 PHI2_B VDD VSS
+XINV0 CLK net1 VDD VSS inv_in
+XNAND_A CLK net15 net2 VDD VSS nand2_cell
+XNAND_B net14 net1 net3 VDD VSS nand2_cell
+XDA1 net2 net4 VDD VSS inv_del
+XDB1 net3 net5 VDD VSS inv_del
+XDA2 net4 net6 VDD VSS inv_del
+XDB2 net5 net7 VDD VSS inv_del
+XDA3 net6 net8 VDD VSS inv_del
+XDB3 net7 net9 VDD VSS inv_del
+XDA4 net8 net10 VDD VSS inv_del
+XDB4 net9 net11 VDD VSS inv_del
+XDA5 net10 net12 VDD VSS inv_del
+XDB5 net11 net13 VDD VSS inv_del
+XDA6 net12 net14 VDD VSS inv_del
+XDB6 net13 net15 VDD VSS inv_del
+XBUF1A net14 PHI1 VDD VSS inv_buf
+XBUF1B PHI1 PHI1_B VDD VSS inv_buf
+XBUF2A net15 PHI2 VDD VSS inv_buf
+XBUF2B PHI2 PHI2_B VDD VSS inv_buf
+.ends
+
+.subckt tg_switch VIN VOUT PHI PHI_B VDD VSS
+XMP VOUT PHI_B VIN VDD sky130_fd_pr__pfet_01v8 L=0.15 W=6.0 nf=2 mult=1
+XMN VOUT PHI VIN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=2.0 nf=2 mult=1
+.ends
+
+.subckt tg_dummy VNODE G_N G_P VDD VSS
+XMPD VNODE G_P VNODE VDD sky130_fd_pr__pfet_01v8 L=0.15 W=3.0 nf=1 mult=1
+XMND VNODE G_N VNODE VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.0 nf=1 mult=1
+.ends
+
+.subckt sc_core VIN VX PHI1 PHI1_B PHI2 PHI2_B VDD VSS
+XTG1 VIN net1 PHI1 PHI1_B VDD VSS tg_switch
+XC1 net1 VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=1
+XTG2 net1 VX PHI2 PHI2_B VDD VSS tg_switch
+XC2 VX VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=8 m=8
+XCDUM VSS VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=16 m=16
+XDUM2 VX PHI2_B PHI2 VDD VSS tg_dummy
+.ends
+
+.subckt ota_5t INP INN IBIAS VOUT VDD VSS
+XM3 net1 net1 VDD VDD sky130_fd_pr__pfet_01v8 L=0.80 W=16.0 nf=4 mult=1
+XM4 VOUT net1 VDD VDD sky130_fd_pr__pfet_01v8 L=0.80 W=16.0 nf=4 mult=1
+XM1 net1 INP net2 VSS sky130_fd_pr__nfet_01v8 L=0.80 W=32.0 nf=8 mult=1
+XM2 VOUT INN net2 VSS sky130_fd_pr__nfet_01v8 L=0.80 W=32.0 nf=8 mult=1
+XM5 net2 IBIAS VSS VSS sky130_fd_pr__nfet_01v8 L=1.00 W=24.0 nf=6 mult=1
+XM6 IBIAS IBIAS VSS VSS sky130_fd_pr__nfet_01v8 L=1.00 W=24.0 nf=6 mult=1
+.ends
+
+.subckt top_sc_lpf VIN CLK IBIAS VOUT VDD VSS
+XCLK CLK net1 net2 net3 net4 VDD VSS non_overlap_clk
+XSC VIN net5 net1 net2 net3 net4 VDD VSS sc_core
+XOTA net5 VOUT IBIAS VOUT VDD VSS ota_5t
+.ends

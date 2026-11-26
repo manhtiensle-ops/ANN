@@ -1,0 +1,39 @@
+* Task 3.4a-Raw Testbench: Top-Level SC LPF WITHOUT Dummy Switches (Baseline Comparison)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/ngspice/top_sc_lpf_xschem.spice"
+.options reltol=1e-3 vntol=1e-5 abstol=1e-11 method=gear
+
+.subckt sc_core_nodummy VIN VX PHI1 PHI1_B PHI2 PHI2_B VDD VSS
+XTG1 VIN net1 PHI1 PHI1_B VDD VSS tg_switch
+XC1  net1 VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=1 m=1
+XTG2 net1 VX  PHI2 PHI2_B VDD VSS tg_switch
+XC2  VX   VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=8 m=8
+.ends
+
+.subckt top_sc_lpf_nodummy VIN CLK IBIAS VOUT VDD VSS
+XCLK CLK net1 net2 net3 net4 VDD VSS non_overlap_clk
+XSC  VIN net5 net1 net2 net3 net4 VDD VSS sc_core_nodummy
+XOTA net5 VOUT IBIAS VOUT VDD VSS ota_5t
+.ends
+
+Vdd  vdd 0 1.8
+Vss  vss 0 0.0
+Vclk clk 0 pulse(0 1.8 5n 0.4n 0.4n 49.6n 100n)
+Vin  vin_coh 0 sin(0.9 0.20 58593.75 0 0 0)
+
+Ib_raw vdd ib_raw 30u
+XDUT_RAW vin_coh clk ib_raw vout_raw vdd vss top_sc_lpf_nodummy
+CL_RAW   vout_raw 0 1p
+
+.ic v(vout_raw)=0.9 v(xdut_raw.net5)=0.9
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+tran 2n 57.6u 0 2n
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_top_raw.txt v(vin_coh) v(vout_raw) v(xdut_raw.net5)
+quit
+.endc
+.end

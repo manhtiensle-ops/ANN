@@ -1,0 +1,54 @@
+* Task 3.3 Testbench: 5T-OTA .op, Open-Loop .ac, and Unity-Gain Step .tran (Pre-Layout)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/ngspice/ota_5t_xschem.spice"
+
+Vdd vdd 0 1.8
+Vss vss 0 0.0
+Vcm vcm 0 0.9
+
+* DUT 1: Open-Loop AC + DC Operating Point Test (CL = 1 pF)
+Ib1  vdd  ib1  30u
+Vac  inp1 vcm  dc 0 ac 1
+XOTA_AC inp1 inn1 ib1 vout_ac vdd vss ota_5t
+Lfb  vout_ac inn1 1G
+Cfb  inn1    0    1G
+CL1  vout_ac 0    1p
+
+* DUT 2: Unity-Gain Closed-Loop Step Response & Slew Rate Test (CL = 1 pF)
+Ib2   vdd   ib2 30u
+Vstep inp2  0   pulse(0.70 1.10 40n 0.5n 0.5n 160n 360n)
+XOTA_TR inp2 vout_tr ib2 vout_tr vdd vss ota_5t
+CL2   vout_tr 0 1p
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+
+op
+print v(vout_ac)
+print @m.xota_ac.xm1.msky130_fd_pr__nfet_01v8[id] @m.xota_ac.xm1.msky130_fd_pr__nfet_01v8[gm] @m.xota_ac.xm1.msky130_fd_pr__nfet_01v8[vds] @m.xota_ac.xm1.msky130_fd_pr__nfet_01v8[vdsat]
+print @m.xota_ac.xm2.msky130_fd_pr__nfet_01v8[vds] @m.xota_ac.xm2.msky130_fd_pr__nfet_01v8[vdsat]
+print @m.xota_ac.xm3.msky130_fd_pr__pfet_01v8[vds] @m.xota_ac.xm3.msky130_fd_pr__pfet_01v8[vdsat]
+print @m.xota_ac.xm4.msky130_fd_pr__pfet_01v8[vds] @m.xota_ac.xm4.msky130_fd_pr__pfet_01v8[vdsat]
+print @m.xota_ac.xm5.msky130_fd_pr__nfet_01v8[id] @m.xota_ac.xm5.msky130_fd_pr__nfet_01v8[vds] @m.xota_ac.xm5.msky130_fd_pr__nfet_01v8[vdsat]
+
+ac dec 100 10 1G
+set units=degrees
+let gain_db = vdb(vout_ac)
+let phase_deg = vp(vout_ac)
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_ota_ac.raw gain_db phase_deg
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_ota_ac.txt gain_db phase_deg
+meas ac aol_db find gain_db at=100
+meas ac gbw_hz when gain_db=0
+meas ac ph_at_gbw find phase_deg when gain_db=0
+
+tran 50p 360n
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_ota_tran.raw v(inp2) v(vout_tr)
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_ota_tran.txt v(inp2) v(vout_tr)
+meas tran t_sr_r trig v(vout_tr) val=0.74 td=35n rise=1 targ v(vout_tr) val=1.06 td=35n rise=1
+meas tran t_sr_f trig v(vout_tr) val=1.06 td=195n fall=1 targ v(vout_tr) val=0.74 td=195n fall=1
+quit
+.endc
+.end

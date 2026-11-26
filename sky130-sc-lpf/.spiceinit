@@ -1,0 +1,4 @@
+* ngspice initialization for sky130A BSIM4 compatibility
+set ngbehavior=hsa
+set ng_nomodcheck
+set num_threads=4

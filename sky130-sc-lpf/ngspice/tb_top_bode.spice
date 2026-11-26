@@ -1,0 +1,40 @@
+* Task 3.4b Testbench: 11-Tone Coherent Multisine Bode Extractor (Pre-Layout fc Measurement)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/ngspice/top_sc_lpf_xschem.spice"
+.options reltol=1e-3 vntol=1e-5 abstol=1e-11 method=gear
+
+Vdd  vdd 0 1.8
+Vss  vss 0 0.0
+Vclk clk 0 pulse(0 1.8 5n 0.4n 0.4n 49.6n 100n)
+
+* N = 256 clocks (df = 39.0625 kHz), 64 settling clocks -> 320 clocks = 32.0 us total
+Bvin vin_ms 0 V = 0.9
++ + 0.008*sin(6.283185307179586*39062.5*time + 0.26)
++ + 0.008*sin(6.283185307179586*78125.0*time + 1.43)
++ + 0.008*sin(6.283185307179586*117187.5*time + 2.86)
++ + 0.008*sin(6.283185307179586*156250.0*time + 0.77)
++ + 0.008*sin(6.283185307179586*195312.5*time + 2.20)
++ + 0.008*sin(6.283185307179586*234375.0*time + 4.05)
++ + 0.008*sin(6.283185307179586*312500.0*time + 1.13)
++ + 0.008*sin(6.283185307179586*468750.0*time + 3.51)
++ + 0.008*sin(6.283185307179586*781250.0*time + 0.44)
++ + 0.008*sin(6.283185307179586*1562500.0*time + 2.63)
++ + 0.008*sin(6.283185307179586*3125000.0*time + 5.12)
+
+Ib vdd ib 30u
+XDUT vin_ms clk ib vout_ms vdd vss top_sc_lpf
+CL   vout_ms 0 1p
+
+.ic v(vout_ms)=0.9 v(xdut.net5)=0.9
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+set num_threads=2
+tran 1n 32.0u 0 2n
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_top_bode.txt v(vin_ms) v(vout_ms)
+quit
+.endc
+.end

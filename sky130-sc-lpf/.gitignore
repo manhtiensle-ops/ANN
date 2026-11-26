@@ -1,0 +1,12 @@
+# Ngspice large binary waveforms & transient dumps (regenerable from *.spice)
+*.raw
+
+# Python bytecode & isolated virtualenvs
+__pycache__/
+*.py[cod]
+.venv*/
+
+# Magic flat intermediate extraction scratch files
+layout/*_flat.ext
+layout/*.sim
+layout/*.nodes

@@ -1,0 +1,49 @@
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/sc_core.sch
+.subckt sc_core VIN VX PHI1 PHI1_B PHI2 PHI2_B VDD VSS
+*.iopin VDD
+*.iopin VSS
+*.ipin PHI1
+*.ipin PHI1_B
+*.ipin PHI2
+*.ipin PHI2_B
+*.ipin VIN
+*.opin VX
+XTG1 VIN net1 PHI1 PHI1_B VDD VSS tg_switch
+XC1 net1 VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=1
+XTG2 net1 VX PHI2 PHI2_B VDD VSS tg_switch
+XC2 VX VSS sky130_fd_pr__cap_mim_m3_1 W=4.85 L=9.85 MF=8 m=8
+XDUM2 VX PHI2_B PHI2 VDD VSS tg_dummy
+.ends
+
+* expanding   symbol:  tg_switch.sym # of pins=6
+** sym_path: /headless/ANN/sky130-sc-lpf/xschem/tg_switch.sym
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/tg_switch.sch
+.subckt tg_switch VIN VOUT PHI PHI_B VDD VSS
+*.iopin VIN
+*.iopin VOUT
+*.ipin PHI_B
+*.ipin PHI
+*.iopin VDD
+*.iopin VSS
+XMP VOUT PHI_B VIN VDD sky130_fd_pr__pfet_01v8 L=0.15 W=6.0 nf=2 ad=0.87 as=1.74 pd=6.58 ps=13.16 nrd=0.0483333333333333
++ nrs=0.0483333333333333 sa=0 sb=0 sd=0 mult=1
+XMN VOUT PHI VIN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=2.0 nf=1 ad=0.58 as=0.58 pd=4.58 ps=4.58 nrd=0.145 nrs=0.145 sa=0 sb=0 sd=0
++ mult=1
+.ends
+
+
+* expanding   symbol:  tg_dummy.sym # of pins=5
+** sym_path: /headless/ANN/sky130-sc-lpf/xschem/tg_dummy.sym
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/tg_dummy.sch
+.subckt tg_dummy VNODE G_N G_P VDD VSS
+*.iopin VNODE
+*.ipin G_P
+*.ipin G_N
+*.iopin VDD
+*.iopin VSS
+XMPD VNODE G_P VNODE VDD sky130_fd_pr__pfet_01v8 L=0.15 W=3.0 nf=1 ad=0.87 as=0.87 pd=6.58 ps=6.58 nrd=0.0966666666666667
++ nrs=0.0966666666666667 sa=0 sb=0 sd=0 mult=1
+XMND VNODE G_N VNODE VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.0 nf=1 ad=0.29 as=0.29 pd=2.58 ps=2.58 nrd=0.29 nrs=0.29 sa=0 sb=0
++ sd=0 mult=1
+.ends
+

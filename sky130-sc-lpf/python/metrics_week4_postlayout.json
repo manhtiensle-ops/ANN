@@ -1,0 +1,212 @@
+{
+  "physical_verification": {
+    "macro_width_um": 149.3,
+    "macro_height_um": 101.3,
+    "macro_area_um2": 15124.09,
+    "macro_area_mm2": 0.015124,
+    "magic_drc_errors": 0,
+    "klayout_feol_beol_offgrid_drc_errors": 0,
+    "netgen_lvs_status": "Circuits match uniquely (0 property errors)",
+    "gds_file": "layout/top_sc_lpf.gds"
+  },
+  "parasitic_breakdown": {
+    "num_extracted_caps": 123,
+    "total_extracted_cap_fF": 284.191,
+    "V1_switched_node_fF": 6.569,
+    "VX_integrating_node_fF": 11.614,
+    "VOUT_buffer_node_fF": 11.389,
+    "PHI1_clock_net_fF": 6.613,
+    "PHI1_B_clock_net_fF": 7.285,
+    "PHI2_clock_net_fF": 8.414,
+    "PHI2_B_clock_net_fF": 6.173,
+    "OTA_mirror_VD1_fF": 13.779,
+    "OTA_tail_VTAIL_fF": 59.3
+  },
+  "power_postlayout": {
+    "I_VDD_avg_uA": 64.48,
+    "P_total_uW": 116.06
+  },
+  "block1_clk_pex": {
+    "t_nov_12_ns": 3.80577,
+    "t_nov_21_ns": 3.72695,
+    "t_rise_ps": 217.796,
+    "t_fall_ps": 295.54499999999996,
+    "max_overlap_V2": 0.00301734,
+    "phi2_strobe_offset_ns": 98.0,
+    "pass": true
+  },
+  "block2_tg_pex": {
+    "Ron_at_VCM_kOhm": 4.56563,
+    "Ron_max_signal_band_kOhm": 5.05862,
+    "Ron_max_rail_kOhm": 5.05862,
+    "Ron_min_rail_kOhm": 0.40764,
+    "tau_C1_ps": 505.86199999999997,
+    "pass": true
+  },
+  "block4_ota_pex": {
+    "A_OL_dB": 41.6168,
+    "GBW_MHz": 42.8712,
+    "PM_deg": 80.4467,
+    "DC_offset_mV": -1.8453000000000497,
+    "I_tail_uA": 28.16388,
+    "SR_rise_V_us": 22.64588906345095,
+    "SR_fall_V_us": 21.18573934920057,
+    "saturation_margins_mV": {
+      "M1_margin_mV": 379.53420000000006,
+      "M2_margin_mV": 592.9705700000001,
+      "M3_margin_mV": 970.7041999999999,
+      "M4_margin_mV": 758.0469999999999,
+      "M5_margin_mV": 136.7552
+    },
+    "all_saturated": true,
+    "pass": true
+  },
+  "top_bode_pex": {
+    "freqs_Hz": [
+      39062.5,
+      78125.0,
+      117187.5,
+      156250.0,
+      195312.5,
+      234375.0,
+      312500.0,
+      468750.0,
+      781250.0,
+      1562500.0,
+      3125000.0
+    ],
+    "mag_post_dB": [
+      -0.28879138465398446,
+      -0.7186241202105275,
+      -1.3382200267562558,
+      -2.1246746089099457,
+      -2.932115490795941,
+      -3.7473517976820556,
+      -5.333232073597007,
+      -8.063968630149226,
+      -11.958636926206268,
+      -17.51735530737788,
+      -22.38456262334513
+    ],
+    "mag_golden_dB": [
+      -0.1843839015262942,
+      -0.6946618312017998,
+      -1.4306923620825296,
+      -2.287593910950356,
+      -3.1867822329583917,
+      -4.079994361513657,
+      -5.759863533801722,
+      -8.573681827860717,
+      -12.553530335394822,
+      -18.128992347948486,
+      -23.012610098422353
+    ],
+    "dc_gain_offset_dB": -0.10440748312769027,
+    "fc_postlayout_Hz": 203453.23515335476,
+    "fc_golden_Hz": 187674.61423300338,
+    "fc_error_pct": 8.40743484931946,
+    "fc_shift_vs_prelayout_pct": 4.8878409617425636,
+    "pass_layout_shift_5pct": true
+  },
+  "top_fft_postlayout_pex": {
+    "N_fft": 512,
+    "M_sig": 3,
+    "f_0_Hz": 58593.75,
+    "DC_mean_V": 0.894494986206509,
+    "DC_pedestal_shift_mV": -5.505013793490998,
+    "V_fund_rms_V": 0.13435949037626502,
+    "V_fund_peak_V": 0.19001301352365133,
+    "THD_dB": -52.84688583239672,
+    "THD_pct": 0.2278535022679321,
+    "SFDR_dB": 53.59694381528756,
+    "SNDR_dB": 52.846137041366674,
+    "SNR_num_dB": 90.48074821206009,
+    "ENOB_bits": 8.48606927597453,
+    "harmonics_dBc": {
+      "HD2_dBc": -53.467131084507365,
+      "HD3_dBc": -57.831570244974664,
+      "HD4_dBc": -67.82707449822252,
+      "HD5_dBc": -79.29281245102074,
+      "HD6_dBc": -90.21133198820122,
+      "HD7_dBc": -97.08587429312348
+    }
+  },
+  "three_column_comparison": {
+    "fc_kHz": {
+      "golden": 187.675,
+      "prelayout": 193.972,
+      "postlayout_pex": 203.453
+    },
+    "fc_error_pct_vs_golden": {
+      "golden": 0.0,
+      "prelayout": 3.36,
+      "postlayout_pex": 8.41
+    },
+    "passband_gain_offset_dB": {
+      "golden": 0.0,
+      "prelayout": -0.094,
+      "postlayout_pex": -0.104
+    },
+    "SFDR_dB": {
+      "golden": 149.5,
+      "prelayout": 54.14,
+      "postlayout_pex": 53.6
+    },
+    "THD_dB": {
+      "golden": -146.07,
+      "prelayout": -53.67,
+      "postlayout_pex": -52.85
+    },
+    "THD_pct": {
+      "golden": 5e-06,
+      "prelayout": 0.207,
+      "postlayout_pex": 0.228
+    },
+    "SNDR_dB": {
+      "golden": 146.02,
+      "prelayout": 53.66,
+      "postlayout_pex": 52.85
+    },
+    "ENOB_bits": {
+      "golden": 23.96,
+      "prelayout": 8.62,
+      "postlayout_pex": 8.49
+    },
+    "DC_pedestal_mV": {
+      "golden": 0.0,
+      "prelayout": -1.9,
+      "postlayout_pex": -5.51
+    },
+    "t_nov_ns": {
+      "golden": "2.0\u20135.0 (Spec)",
+      "prelayout": "3.12 / 3.09",
+      "postlayout_pex": "3.81 / 3.73"
+    },
+    "Ron_at_VCM_kOhm": {
+      "golden": "< 5.00 (Spec)",
+      "prelayout": 3.713,
+      "postlayout_pex": 4.566
+    },
+    "Ron_max_kOhm": {
+      "golden": "< 5.00 (Nominal)",
+      "prelayout": 4.431,
+      "postlayout_pex": 5.059
+    },
+    "OTA_AOL_dB": {
+      "golden": "> 38.0 (Spec)",
+      "prelayout": 41.62,
+      "postlayout_pex": 41.62
+    },
+    "OTA_GBW_MHz": {
+      "golden": "> 10.0 (Spec)",
+      "prelayout": 43.6,
+      "postlayout_pex": 42.87
+    },
+    "OTA_PM_deg": {
+      "golden": ">= 60.0 (Spec)",
+      "prelayout": 81.05,
+      "postlayout_pex": 80.45
+    }
+  },
+  "gate4_overall_pass": true
+}

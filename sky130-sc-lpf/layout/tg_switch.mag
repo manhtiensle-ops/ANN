@@ -1,0 +1,101 @@
+magic
+tech sky130A
+magscale 1 2
+timestamp 1795622114
+<< metal1 >>
+rect -40 -283 40 -231
+rect -40 1590 40 1642
+rect -40 129 40 181
+rect -40 760 40 812
+rect -232 -42 -73 42
+rect -232 1108 -73 1192
+rect -232 -42 -148 42
+rect -232 1108 -148 1192
+rect 73 -42 232 42
+rect 73 1108 232 1192
+rect 148 -42 232 42
+rect 148 1108 232 1192
+rect -26 -52 26 32
+rect -26 1118 26 1202
+<< via1 >>
+rect -26 -283 26 -231
+rect -26 1590 26 1642
+rect -26 129 26 181
+rect -26 760 26 812
+rect -216 -26 -164 26
+rect -216 1124 -164 1176
+rect 164 -26 216 26
+rect 164 1124 216 1176
+rect -26 -36 26 16
+rect -26 1134 26 1186
+<< metal2 >>
+rect -34 -299 34 -215
+rect -322 -402 322 -318
+rect -34 -394 34 -223
+rect -34 1574 34 1658
+rect -322 1678 322 1762
+rect -34 1582 34 1754
+rect -34 113 34 197
+rect -34 121 34 374
+rect -46 294 46 386
+rect -34 744 34 828
+rect -34 586 34 820
+rect -46 574 46 666
+rect -232 -42 -148 42
+rect -232 1108 -148 1192
+rect -224 -34 -156 1184
+rect 148 -42 232 42
+rect 148 1108 232 1192
+rect 156 -34 224 1184
+rect -236 914 -144 1006
+rect 144 914 236 1006
+rect -34 -52 34 32
+rect -34 -144 34 24
+rect -46 -156 46 -64
+rect -34 1118 34 1202
+rect -34 1126 34 1424
+rect -46 1344 46 1436
+<< via2 >>
+rect -28 312 28 368
+rect -28 592 28 648
+rect -218 932 -162 988
+rect 162 932 218 988
+rect -28 -138 28 -82
+rect -28 1362 28 1418
+<< metal3 >>
+rect -52 288 52 392
+rect -382 298 42 382
+rect -52 568 52 672
+rect -382 578 42 662
+rect -242 908 -138 1012
+rect 138 908 242 1012
+rect -382 918 232 1002
+rect -52 -162 52 -58
+rect -42 -152 422 -68
+rect -52 1338 52 1442
+rect -42 1348 422 1432
+rect 338 -152 422 1432
+use dev_n_tg XMN
+timestamp 1795622114
+transform 1 0 0 0 1 0
+box -263 -310 263 310
+use dev_p_tg XMP
+timestamp 1795622114
+transform 1 0 0 0 1 1150
+box -263 -519 263 519
+<< labels >>
+rlabel metal3 -340 940 -300 980 1 VIN
+port 1 nsew
+rlabel metal3 360 460 400 500 1 VOUT
+port 2 nsew
+rlabel metal3 -340 320 -300 360 1 PHI
+port 3 nsew
+rlabel metal3 -340 600 -300 640 1 PHI_B
+port 4 nsew
+rlabel metal2 -40 1700 40 1740 1 VDD
+port 5 nsew
+rlabel metal2 -40 -380 40 -340 1 VSS
+port 6 nsew
+<< properties >>
+string FIXED_BBOX -382 -402 422 1762
+<< end >>

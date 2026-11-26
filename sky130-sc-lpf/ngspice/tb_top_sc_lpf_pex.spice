@@ -1,0 +1,32 @@
+* Week 4 Task 4.3e Testbench: Top-Level SC LPF Coherent .tran & FFT (Post-Layout PEX)
+.lib "/foss/pdks/sky130A/libs.tech/combined/sky130.lib.spice" tt
+.temp 27
+
+.include "/headless/ANN/sky130-sc-lpf/layout/top_sc_lpf_pex.spice"
+.options reltol=1e-3 vntol=1e-5 abstol=1e-11 method=gear
+
+Vdd  vdd 0 1.8
+Vss  vss 0 0.0
+Vclk clk 0 pulse(0 1.8 5n 0.4n 0.4n 49.6n 100n)
+
+* Identical Coherent Single-Tone Input as Pre-Layout (`tb_top_sc_lpf.spice`):
+* N_fft = 512 clocks, M_sig = 3 -> f0 = 58.59375 kHz, Ain = 0.20 V, 64 settling + 512 FFT = 57.6 us
+Vin  vin_coh 0 sin(0.9 0.20 58593.75 0 0 0)
+
+Ib_pex vdd ib_pex 30u
+XDUT_PEX vin_coh clk ib_pex vout_pex vdd vss top_sc_lpf
+CL_PEX   vout_pex 0 1p
+
+.ic v(vout_pex)=0.9 v(xdut_pex.XOTA.INP)=0.9
+
+.control
+set ngbehavior=hsa
+set ng_nomodcheck
+set num_threads=4
+tran 2n 57.6u 0 2n
+write /headless/ANN/sky130-sc-lpf/ngspice/tb_top_pex_zoom.raw v(vin_coh) v(vout_pex) v(xdut_pex.XSC.PHI1) v(xdut_pex.XSC.PHI2)
+wrdata /headless/ANN/sky130-sc-lpf/ngspice/tb_top_pex.txt v(vin_coh) v(vout_pex) v(xdut_pex.XOTA.INP)
+meas tran i_vdd_avg avg i(Vdd) from=10u to=50u
+quit
+.endc
+.end

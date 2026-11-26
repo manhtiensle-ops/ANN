@@ -1,0 +1,22 @@
+* NGSPICE file created from tg_switch_flat.ext - technology: sky130A
+
+.subckt tg_switch VIN VOUT PHI PHI_B VDD VSS
+X0 VIN PHI VOUT VSS sky130_fd_pr__nfet_01v8 ad=0.31 pd=2.62 as=0.165 ps=1.33 w=1 l=0.15
+X1 VOUT PHI_B VIN VDD sky130_fd_pr__pfet_01v8 ad=0.495 pd=3.33 as=0.93 ps=6.62 w=3 l=0.15
+X2 VIN PHI_B VOUT VDD sky130_fd_pr__pfet_01v8 ad=0.93 pd=6.62 as=0.495 ps=3.33 w=3 l=0.15
+X3 VOUT PHI VIN VSS sky130_fd_pr__nfet_01v8 ad=0.165 pd=1.33 as=0.31 ps=2.62 w=1 l=0.15
+C0 VDD PHI_B 0.63917f
+C1 VDD VOUT 0.14254f
+C2 VIN PHI_B 0.38735f
+C3 PHI PHI_B 0.07293f
+C4 VIN VOUT 1.12375f
+C5 PHI VOUT 0.19823f
+C6 VDD VIN 0.71936f
+C7 VDD PHI 0.00703f
+C8 PHI VIN 0.25845f
+C9 PHI_B VOUT 0.21982f
+C10 VOUT VSS 1.39348f
+C11 VIN VSS 1.65799f
+C12 VDD VSS 2.47178f
+.ends
+

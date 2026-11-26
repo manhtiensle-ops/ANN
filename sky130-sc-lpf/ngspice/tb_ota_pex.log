@@ -1,0 +1,70 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * week 4 task 4.3c testbench: 5t-ota .op, open-loop .ac, and unity-gain step .tran (post-layout pex)
+
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+option SCALE: Scale is set to 1e-06 for instance and model parameters
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+v(vout_ac) = 8.981547e-01
+@m.xota_ac.x3.msky130_fd_pr__nfet_01v8[id] = 1.767133e-06
+@m.xota_ac.x3.msky130_fd_pr__nfet_01v8[gm] = 3.618600e-05
+@m.xota_ac.x3.msky130_fd_pr__nfet_01v8[vds] = 4.478302e-01
+@m.xota_ac.x3.msky130_fd_pr__nfet_01v8[vdsat] = 6.829600e-02
+@m.xota_ac.x2.msky130_fd_pr__nfet_01v8[vds] = 6.605562e-01
+@m.xota_ac.x2.msky130_fd_pr__nfet_01v8[vdsat] = 6.758563e-02
+@m.xota_ac.x0.msky130_fd_pr__pfet_01v8[vds] = 1.114180e+00
+@m.xota_ac.x0.msky130_fd_pr__pfet_01v8[vdsat] = 1.434758e-01
+@m.xota_ac.x14.msky130_fd_pr__pfet_01v8[vds] = 9.014576e-01
+@m.xota_ac.x14.msky130_fd_pr__pfet_01v8[vdsat] = 1.434106e-01
+@m.xota_ac.x8.msky130_fd_pr__nfet_01v8[id] = 4.693980e-06
+@m.xota_ac.x8.msky130_fd_pr__nfet_01v8[vds] = 2.373883e-01
+@m.xota_ac.x8.msky130_fd_pr__nfet_01v8[vdsat] = 1.006331e-01
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 801
+binary raw file "/headless/ANN/sky130-sc-lpf/ngspice/tb_ota_pex_ac.raw"
+aol_db              =  4.16168e+01
+gbw_hz              =  4.28712e+07
+ph_at_gbw           =  -9.95533e+01
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                        1.8
+vss                                          0
+vcm                                        0.9
+ib1                                   0.669848
+inp1                                       0.9
+vout_ac                               0.898155
+inn1                                  0.898155
+ib2                                   0.669848
+inp2                                       0.7
+vout_tr                               0.700011
+lfb#branch                                   0
+vstep#branch                                 0
+vac#branch                                   0
+vcm#branch                                   0
+vss#branch                         0.000111436
+vdd#branch                        -0.000111436
+
+
+No. of Data Rows : 7220
+binary raw file "/headless/ANN/sky130-sc-lpf/ngspice/tb_ota_pex_tran.raw"
+t_sr_r              =  1.41306e-08 targ=  5.52718e-08 trig=  4.11412e-08
+t_sr_f              =  1.51045e-08 targ=  2.17434e-07 trig=  2.02329e-07
+ngspice-47 done

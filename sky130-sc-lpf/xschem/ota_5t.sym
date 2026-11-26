@@ -1,0 +1,33 @@
+v {xschem version=3.4.6 file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @@INP @@INN @@IBIAS @@VOUT @@VDD @@VSS @symname"
+template="name=X1"
+}
+V {}
+S {}
+E {}
+L 4 -75 -70 -75 50 {}
+L 4 -75 50 75 -10 {}
+L 4 75 -10 -75 -70 {}
+L 4 -67 -30 -57 -30 {}
+L 4 -62 -35 -62 -25 {}
+L 4 -67 10 -57 10 {}
+L 4 -115 -30 -75 -30 {}
+B 5 -117.5 -32.5 -112.5 -27.5 {name=INP dir=in}
+L 4 -115 10 -75 10 {}
+B 5 -117.5 7.5 -112.5 12.5 {name=INN dir=in}
+L 4 -115 45 -75 45 {}
+B 5 -117.5 42.5 -112.5 47.5 {name=IBIAS dir=in}
+T {IB} -67 37 0 0 0.13 0.13 {}
+L 4 75 -10 115 -10 {}
+B 5 112.5 -12.5 117.5 -7.5 {name=VOUT dir=out}
+L 4 0 -100 0 -40 {}
+B 5 -2.5 -102.5 2.5 -97.5 {name=VDD dir=inout}
+T {VDD} 6 -82 0 0 0.14 0.14 {}
+L 4 0 20 0 100 {}
+B 5 -2.5 97.5 2.5 102.5 {name=VSS dir=inout}
+T {VSS} 6 66 0 0 0.14 0.14 {}
+T {@name} 38 -52 0 0 0.20 0.20 {}
+T {5T-OTA} -18 -14 0 0 0.19 0.19 {hcenter=true vcenter=true layer=7}
+T {BUFFER} -18 4 0 0 0.15 0.15 {hcenter=true vcenter=true layer=13}

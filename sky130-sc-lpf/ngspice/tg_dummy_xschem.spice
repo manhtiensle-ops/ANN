@@ -1,0 +1,12 @@
+** sch_path: /headless/ANN/sky130-sc-lpf/xschem/tg_dummy.sch
+.subckt tg_dummy VNODE G_N G_P VDD VSS
+*.iopin VNODE
+*.ipin G_P
+*.ipin G_N
+*.iopin VDD
+*.iopin VSS
+XMPD VNODE G_P VNODE VDD sky130_fd_pr__pfet_01v8 L=0.15 W=3.0 nf=1 ad=0.87 as=0.87 pd=6.58 ps=6.58 nrd=0.0966666666666667
++ nrs=0.0966666666666667 sa=0 sb=0 sd=0 mult=1
+XMND VNODE G_N VNODE VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.0 nf=1 ad=0.29 as=0.29 pd=2.58 ps=2.58 nrd=0.29 nrs=0.29 sa=0 sb=0
++ sd=0 mult=1
+.ends
